@@ -1,1 +1,4 @@
 test
+<class 'TypeError'>
+
+ScheduledJob() got unexpected keyword arguments: 'approved_by_user'
