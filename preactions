@@ -1,0 +1,62 @@
+version: 1
+key: test
+name: "test workflow"
+description: "Create a new User Log."
+category: "Example"
+manual_duration_minutes: 10
+enabled: true
+
+inputs:
+  - key: comments
+    label: Comments
+    type: string
+    required: false
+
+  - key: change_id
+    label: Change ID
+    type: string
+    required: false
+
+  - key: endpoint
+    label: Endpoint
+    type: listdict
+    required: false
+    columns:
+      - key: name
+        label: Endpoint Name
+        type: string
+        required: true
+        validators:
+          - regex: '^.+$'
+            message: "Endpoint name cannot be empty."
+      - key: ip_address
+        label: IP Address
+        type: string
+        required: true
+        validators:
+          - regex: '^(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:\/(3[0-2]|[12]?[0-9]))?$'
+            message: "IP address must be a valid IPv4 address with optional subnet mask."
+
+pre_actions:
+  - type: nautobot
+    name: pre_do_nothing
+    script: scripts/do_nothing.py
+    with:
+      comments: "{{ inputs.comments }}"
+      snow: "{{ inputs.change_id }}"
+
+actions:
+  - type: nautobot
+    name: main_do_nothing
+    script: scripts/do_nothing.py
+    with:
+      comments: "{{ inputs.comments }}"
+      snow: "{{ inputs.change_id }}"
+
+post_actions:
+  - type: nautobot
+    name: post_do_nothing
+    script: scripts/do_nothing.py
+    with:
+      comments: "{{ inputs.comments }}"
+      snow: "{{ inputs.change_id }}"
