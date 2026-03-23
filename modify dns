@@ -1,0 +1,375 @@
+version: 1
+key: delete_dns_record
+name: "Delete DNS Record"
+description: "Delete an existing DNS Record. Options include A, Alias, TXT."
+category: "DDI"
+manual_duration_minutes: 10
+enabled: true
+inputs:
+  {% include "templates/inputs/standard_change_inputs.yaml" %}
+
+- key: record_type
+  label: Record Type
+  type: choice
+  choices:
+  - { value: a_record, label: "A Record" }
+  - { value: alias_record, label: "Alias Record" }
+  - { value: txt_record, label: "TXT Record"}
+  required: true
+
+- key: bulk_change
+  label: Bulk Change
+  type: choice
+  choices:
+  - { value: positive, label: "Yes" }
+  - { value: negative, label: "No" }
+  required: true
+
+- key: tenant
+  label: Tenant
+  type: choice
+  default: SSNC
+  choices:
+  - { value: SSNC, label: "SSNC" }
+  required: false
+
+- key: view
+  label: View
+  type: choice
+  choices:
+  - { value: Enterprise, label: "Enterprise" }
+  - { value: Enterprise-Test, label: "Enterprise-Test" }
+  - { value: Inet, label: "Inet" }
+  - { value: customer, label: "Customer" }
+  required: true
+  show_if:
+    bulk_change: 'negative'
+
+- key: hostname
+  label: Hostname
+  type: string
+  required: true
+  validators:
+  - regex: '^(?!.*intralinks).*$'
+    message: "Values containing 'intralinks' are not allowed."
+    flags: ["IGNORECASE"]
+  show_if:
+    bulk_change: 'negative'
+    record_type: a_record
+
+- key: zone
+  label: Zone
+  type: string
+  required: true
+  validators:
+  - regex: '^(?!.*intralinks).*$'
+    message: "Values containing 'intralinks' are not allowed."
+    flags: ["IGNORECASE"]
+  - regex: '^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+\.?$'
+    message: "Use a valid Zone."
+  show_if:
+    bulk_change: 'negative'
+    record_type: a_record
+
+- key: delete_ip
+  label: Delete Associated IP (Optional)
+  type: boolean
+  required: false
+  show_if:
+    bulk_change: 'negative'
+    record_type: a_record
+
+- key: fqdn
+  label: FQDN
+  type: string
+  required: true
+  validators:
+  - regex: '^(?!.*intralinks).*$'
+    message: "Values containing 'intralinks' are not allowed."
+    flags: ["IGNORECASE"]
+  # validators:
+  # - regex: '^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+\.?$'
+  #   message: "Use a valid FQDN."
+  show_if:
+    record_type:
+     - alias_record
+     - txt_record
+    bulk_change: 'negative'
+
+- key: alias
+  label: Alias
+  type: string
+  required: true
+  validators:
+  - regex: '^(?!.*intralinks).*$'
+    message: "Values containing 'intralinks' are not allowed."
+    flags: ["IGNORECASE"]
+  - regex: '^(?:\*\.)?(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+\.?$'
+    message: "Use a valid Alias."
+  show_if:
+    record_type: alias_record
+    bulk_change: 'negative'
+
+- key: txt
+  label: TXT Value
+  type: string
+  required: true
+  validators:
+  - regex: '^(?!.*intralinks).*$'
+    message: "Values containing 'intralinks' are not allowed."
+    flags: ["IGNORECASE"]
+  show_if:
+    record_type: txt_record
+    bulk_change: 'negative'
+
+- key: delete_id
+  label: Delete ID (Optional - TXT only)
+  type: string
+  required: false
+  help_text: "If provided, deletion will skip lookup and use this delete_id."
+  show_if:
+    record_type: txt_record
+    bulk_change: 'negative'
+
+- key: a_record_list
+  label: "A Record Delete List"
+  description: |
+    Provide one row per A record delete request.
+  type: listdict
+  required: true
+  columns:
+  - key: view
+    label: View
+    type: choice
+    required: true
+    choices:
+    - { value: Enterprise, label: "Enterprise" }
+    - { value: Enterprise-Test, label: "Enterprise-Test" }
+    - { value: Inet, label: "Inet" }
+    - { value: customer, label: "Customer" }
+  - key: hostname
+    label: Hostname
+    type: string
+    required: true
+    validators:
+    - regex: '^(?!.*intralinks).*$'
+      message: "Values containing 'intralinks' are not allowed."
+      flags: ["IGNORECASE"]
+    - regex: '^[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*$'
+      message: "Use a valid hostname."
+  - key: zone
+    label: Zone
+    type: string
+    required: true
+    validators:
+    - regex: '^(?!.*intralinks).*$'
+      message: "Values containing 'intralinks' are not allowed."
+      flags: ["IGNORECASE"]
+    - regex: '^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+\.?$'
+      message: "Use a valid Zone."
+  - key: delete_ip
+    label: Delete Associated IP
+    type: boolean
+    required: false
+  show_if:
+    bulk_change: 'positive'
+    record_type: a_record
+
+- key: alias_record_list
+  label: "Alias Delete List"
+  description: |
+    Provide one row per alias delete request.
+  type: listdict
+  required: true
+  columns:
+  - key: view
+    label: View
+    type: choice
+    required: true
+    choices:
+    - { value: Enterprise, label: "Enterprise" }
+    - { value: Enterprise-Test, label: "Enterprise-Test" }
+    - { value: Inet, label: "Inet" }
+    - { value: customer, label: "Customer" }
+  - key: fqdn
+    label: FQDN
+    type: string
+    required: true
+    validators:
+    - regex: '^(?!.*intralinks).*$'
+      message: "Values containing 'intralinks' are not allowed."
+      flags: ["IGNORECASE"]
+    - regex: '^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+\.?$'
+      message: "Use a valid FQDN."
+  - key: alias
+    label: Alias
+    type: string
+    required: true
+    validators:
+    - regex: '^(?!.*intralinks).*$'
+      message: "Values containing 'intralinks' are not allowed."
+      flags: ["IGNORECASE"]
+    - regex: '^(?:\*\.)?(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+\.?$'
+      message: "Use a valid Alias."
+  show_if:
+    bulk_change: 'positive'
+    record_type: alias_record
+
+- key: txt_record_list
+  label: "TXT Delete List"
+  description: |
+    Provide one row per TXT delete request.
+  type: listdict
+  required: true
+  columns:
+  - key: view
+    label: View
+    type: choice
+    required: true
+    choices:
+    - { value: Enterprise, label: "Enterprise" }
+    - { value: Enterprise-Test, label: "Enterprise-Test" }
+    - { value: Inet, label: "Inet" }
+    - { value: customer, label: "Customer" }
+  - key: fqdn
+    label: FQDN
+    type: string
+    required: true
+    validators:
+    - regex: '^(?!.*intralinks).*$'
+      message: "Values containing 'intralinks' are not allowed."
+      flags: ["IGNORECASE"]
+    - regex: '^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z0-9-]{1,63})+\.?$'
+      message: "Use a valid FQDN."
+  - key: txt
+    label: TXT Value
+    type: string
+    required: true
+    validators:
+    - regex: '^(?!.*intralinks).*$'
+      message: "Values containing 'intralinks' are not allowed."
+      flags: ["IGNORECASE"]
+    - regex: '^.+$'
+      message: "TXT value cannot be empty."
+  - key: delete_id
+    label: Delete ID (Optional)
+    type: string
+    required: false
+  show_if:
+    bulk_change: 'positive'
+    record_type: txt_record
+
+actions:
+  - type: nautobot
+    name: verify_snow
+    script: scripts/verify_change.py
+    with:
+      change_id: "{{ inputs.change_id }}"
+
+  - type: nautobot
+    name: notify_snow_fail
+    script: scripts/notify_email.py
+    with:
+      to_email: "{{ user.email }}"
+      subject: "{{ inputs.change_id }}: DNS Record Deletion"
+      body: |
+        Your DNS record deletion workflow was aborted.
+        Reason: {{ results.verify_snow.return_value.reason if (results.verify_snow is defined) else 'Unknown' }}
+    when: "{{ results.verify_snow is defined and results.verify_snow.return_value.result == false }}"
+
+  - type: nautobot
+    name: abort_snow
+    script: scripts/fail_workflow.py
+    with:
+      message: "Change verification failed; workflow aborted after notification."
+    when: "{{ results.verify_snow is defined and results.verify_snow.return_value.result == false }}"
+
+  - type: nautobot
+    name: delete_dns
+    script: scripts/delete_dns_record.py
+    with:
+      record_type: "{{ inputs.record_type }}"
+      tenant: "{{ inputs.tenant }}"
+      view: "{{ inputs.view }}"
+      hostname: "{{ inputs.hostname }}"
+      fqdn: "{{ inputs.fqdn }}"
+      zone: "{{ inputs.zone }}"
+      delete_ip: "{{ inputs.delete_ip }}"
+      alias: "{{ inputs.alias }}"
+      txt: "{{ inputs.txt }}"
+      delete_id: "{{ inputs.delete_id }}"
+      a_record_list: "{{ inputs.a_record_list }}"
+      alias_record_list: "{{ inputs.alias_record_list }}"
+      txt_record_list: "{{ inputs.txt_record_list }}"
+      bulk_change: "{{ inputs.bulk_change }}"
+    when: "{{ results.verify_snow is defined and results.verify_snow.return_value.result == true }}"
+
+  - type: nautobot
+    name: notify_ok
+    script: scripts/notify_email.py
+    with:
+      to_email: "{{ user.email }}"
+      subject: "{{ inputs.change_id }}: DNS Record Deletion Successful"
+      body: |
+        Your DNS record deletion workflow has completed successfully.
+        Details:
+        - SNOW Ticket: {{ inputs.change_id }}
+        - Record Type: {{ inputs.record_type }}
+    when: "{{ inputs.bulk_change == 'negative' and results.delete_dns is defined and (results.delete_dns.return_value.status_code|default(500)) == 200 }}"
+
+  - type: nautobot
+    name: notify_fail
+    script: scripts/notify_email.py
+    with:
+      to_email: "{{ user.email }}"
+      subject: "{{ inputs.change_id }}: DNS Record Deletion Failed"
+      body: |
+        Your DNS record deletion workflow has failed with status.
+        Details:
+        - SNOW Ticket: {{ inputs.change_id }}
+        - Record Type: {{ inputs.record_type }}
+        - Status Code: {{ results.delete_dns.return_value.status_code | default(500) }}
+        - Notes: {{ results.delete_dns.return_value.user_message | default('No details provided') }}
+    when: "{{ inputs.bulk_change == 'negative' and results.delete_dns is defined and (results.delete_dns.return_value.status_code|default(500)) >= 300 }}"
+
+  - type: nautobot
+    name: fail_action
+    script: scripts/fail_workflow.py
+    with:
+      message: "DNS record deletion failed (status={{ results.delete_dns.return_value.status_code|default(500) }})"
+    when: "{{ inputs.bulk_change == 'negative' and results.delete_dns is defined and (results.delete_dns.return_value.status_code|default(500)) >= 300 }}"
+
+  - type: nautobot
+    name: notify_bulk_ok
+    script: scripts/notify_email.py
+    with:
+      to_email: "{{ user.email }}"
+      subject: "{{ inputs.change_id }}: Bulk DNS Record Deletion Result Successful"
+      body: |
+        Your DNS record deletion workflow has completed. Results are below:
+        Details:
+        - SNOW Ticket: {{ inputs.change_id }}
+        - Record Type: {{ inputs.record_type }}
+        - Notes: {{ results.delete_dns.return_value.user_message if (results.delete_dns is defined) else '' }}
+    when: "{{ inputs.bulk_change == 'positive' and results.delete_dns is defined and (results.delete_dns.return_value.status_code|default(500)) == 200 }}"
+
+  - type: nautobot
+    name: notify_bulk_partial
+    script: scripts/notify_email.py
+    with:
+      to_email: "{{ user.email }}"
+      subject: "{{ inputs.change_id }}: Bulk DNS Record Deletion Result Partial/Total Failure"
+      body: |
+        Your DNS record deletion workflow has completed with partial/total failures. Results are below:
+        Details:
+        - SNOW Ticket: {{ inputs.change_id }}
+        - Record Type: {{ inputs.record_type }}
+        - Notes: {{ results.delete_dns.return_value.user_message | default('No details provided') }}
+    when: "{{ inputs.bulk_change == 'positive' and results.delete_dns is defined and (results.delete_dns.return_value.status_code|default(500)) == 400 }}"
+
+  - type: nautobot
+    name: fail_bulk
+    script: scripts/fail_workflow.py
+    with:
+      message: "Bulk DNS deletion failed (status={{ results.delete_dns.return_value.status_code|default(500) }})"
+    when: "{{ inputs.bulk_change == 'positive' and results.delete_dns is defined and (results.delete_dns.return_value.status_code|default(500)) >= 300 }}"
