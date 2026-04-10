@@ -1,0 +1,144 @@
+ Executive Summary
+This document outlines the comprehensive plan for the network switch refresh project at the Amsterdam and Singapore colocation data centers. The primary goal is to replace aging Cisco Catalyst 3850 switch stacks with a modern, scalable Cisco Nexus-based architecture. This upgrade supports critical initiatives such as the SD-WAN transformation, Cisco DNA Center implementation, and ongoing firewall refresh efforts, while significantly expanding 10G+ port availability and improving overall network resiliency. Additionally, the project consolidates legacy top-of-rack (ToR) switches connected to VxRack/Dell infrastructure into the new access layer for streamlined operations.
+
+Project Objectives
+
+Retire Legacy Infrastructure: Decommission aging Cisco Catalyst 3850 switch stacks that are end-of-life and no longer aligned with long-term IT strategy.
+
+Modernize Network Fabric: Introduce a scalable, high-performance Nexus-based architecture to support current and future enterprise workloads.
+
+Standardize Global Design: Align the Amsterdam and Singapore data centers with a consistent topology for operational efficiency.
+
+Enhance Redundancy and Performance: Implement vPC and multipath designs to ensure high availability and improved traffic handling.
+
+Expand 10G/25G Capacity: Add significant SFP+/SFP28 port density to support:
+◦ SD-WAN transformation
+◦ Cisco DNA Center implementation
+◦ Firewall refresh/upgrade projects
+
+Upgrade Out-of-Band Infrastructure: Replace legacy Cisco terminal servers with Opengear 32-port console servers for improved remote access, monitoring, and resilience.
+
+Consolidate ToR Infrastructure: Decommission legacy top-of-rack Nexus switches used for VxRack/Dell servers, and migrate functionality into the new access layer switches.
+
+ 
+
+Current Infrastructure Overview
+Legacy Switches
+
+Model: Cisco Catalyst 3850
+
+Topology: Stack-based Layer 2/3
+
+Limitations:
+◦ Limited 10G port availability
+◦ Hardware and software end-of-life
+◦ Reduced flexibility for segmentation, automation, and monitoring
+Top-of-Rack (ToR) Switches
+
+Model: Cisco Nexus (2 pairs per site)
+
+Use Case: Directly connected to VxRack/Dell servers
+
+Configuration: Layer 2 uplinks to 3850 stacks
+
+Status: To be decommissioned and integrated into new Nexus access layer
+
+
+Out-of-Band Management
+
+Device: Cisco terminal server
+
+Issue: Limited capacity, outdated management features
+
+ 
+
+New Network Architecture
+
+IDC.png
+ 
+
+
+Core/Aggregation Layer
+
+Model: Cisco Nexus N9K-C93240YC-FX2 (2 per site)
+
+Role: Aggregation and core services
+
+Features:
+◦ High-density 10G/25G/100G support
+◦ Advanced feature set for VXLAN, vPC, automation
+Access Layer
+Copper Access
+
+Model: Cisco Nexus N9K-C93108TC-EX (2 per site)
+
+Use Case: Endpoints requiring 1G/10G copper connectivity
+Fiber Access
+
+Model: Cisco Nexus N9K-C93180YC-FX3 (2 per site)
+
+Use Case: High-speed uplinks, fiber-connected servers and devices, including migrated VxRack/Dell infrastructure
+
+
+Out-of-Band Management
+
+Device: Opengear 32-port console server (1 per site)
+
+Purpose:
+◦ Serial console access to core/access switches and key devices
+◦ Remote access over dedicated management network
+◦ Optional cellular failover and centralized logging
+
+ 
+
+Equipment and Logistics
+
+Procurement: Hardware sourced via AT&T (quote attached)
+
+Shipping: Equipment delivered to company staging facilities near each site
+
+Personnel: Two engineers per site will travel for deployment
+
+Sites: Amsterdam and Singapore colocation data centers
+
+ 
+
+Deployment Plan
+Staging and Pre-Checks
+
+Configure and test Nexus switches offsite
+
+Validate port mapping and VLAN configurations
+
+Perform config backups of legacy switches
+
+
+Migration Strategy
+
+Physical Installation
+◦ Rack and cable new switches per rack elevation and cabling plans
+◦ Connect management ports to Opengear devices
+
+L2 Interconnection
+◦ Create Layer 2 port-channels between legacy 3850s and Nexus access switches
+◦ Validate STP topology, root bridge roles
+
+L3 Cutover
+◦ Move SVIs and default gateway responsibilities to Nexus core switches
+◦ Update dynamic routing peers (OSPF/BGP)
+
+Cable Migration
+◦ Incrementally migrate connected devices to Nexus switches
+◦ Migrate VxRack/Dell server connections from legacy ToR switches
+◦ Verify connectivity, VLAN, and throughput per move
+
+Decommissioning
+◦ Remove legacy 3850 stacks and ToR Nexus switches
+◦ Update asset inventory and dispose of hardware per company policy
+Post-Migration Validation
+
+Conduct reachability tests and throughput benchmarks
+
+Confirm routing tables and VLAN segmentation
+
+Monitor for performance or error anomalies

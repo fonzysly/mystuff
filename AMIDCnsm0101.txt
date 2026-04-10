@@ -1,0 +1,3007 @@
+hostname AMIDCnsm0101
+!
+!
+vrf definition Mgmt-vrf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+logging buffered 100000 informational
+no logging console
+!
+aaa new-model
+!
+!
+aaa group server tacacs+ ETN-TACACS
+ server name 10.251.252.33
+ server name 10.251.253.33
+!
+aaa authentication login default group ETN-TACACS local
+aaa authentication enable default group ETN-TACACS none
+aaa authorization exec default group ETN-TACACS local if-authenticated 
+aaa authorization commands 1 default group ETN-TACACS local if-authenticated 
+aaa authorization commands 15 default group ETN-TACACS local if-authenticated 
+aaa authorization network default group ETN-TACACS local if-authenticated 
+aaa accounting exec default start-stop group ETN-TACACS
+aaa accounting commands 0 default start-stop group ETN-TACACS
+aaa accounting commands 1 default start-stop group ETN-TACACS
+aaa accounting commands 15 default start-stop group ETN-TACACS
+aaa accounting network default start-stop group ETN-TACACS
+aaa accounting system default start-stop group ETN-TACACS
+!
+!
+!
+!
+!
+!
+aaa session-id common
+process cpu threshold type total rising 90 interval 60 falling 50 interval 60
+process cpu statistics limit entry-percentage 40
+boot system switch all flash:packages.conf
+clock timezone GMT 0 0
+switch 1 provision ws-c3850-24xs
+switch 2 provision ws-c3850-24xs
+switch 3 provision ws-c3850-48p
+switch 4 provision ws-c3850-48p
+switch 5 provision ws-c3850-48p
+switch 6 provision ws-c3850-48p
+!
+!
+!
+!
+call-home
+ ! If contact email address in call-home is configured as sch-smart-licensing@cisco.com
+ ! the email address configured in Cisco Smart License Portal will be used as contact email address to send SCH notifications.
+ contact-email-addr sch-smart-licensing@cisco.com
+ profile "CiscoTAC-1"
+  active
+  destination transport-method http
+  no destination transport-method email
+no ip source-route
+ip routing
+!
+!
+!
+!
+!
+!
+!
+ip domain name net.etn.com
+!
+!
+!
+login on-success log
+!
+!
+!
+!
+!
+qos queue-softmax-multiplier 1200
+!
+!
+vtp domain AMIDC
+vtp mode transparent
+udld aggressive
+
+!
+!
+!
+crypto pki trustpoint TP-self-signed-607649667
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-607649667
+ revocation-check none
+ rsakeypair TP-self-signed-607649667
+!
+crypto pki trustpoint SLA-TrustPoint
+ enrollment pkcs12
+ revocation-check crl
+!
+crypto pki trustpoint DNAC-CA
+ enrollment mode ra
+ enrollment terminal
+ usage ssl-client
+ revocation-check crl none
+ source interface Vlan555
+!
+!
+crypto pki certificate chain TP-self-signed-607649667
+ certificate self-signed 01
+crypto pki certificate chain SLA-TrustPoint
+ certificate ca 01
+crypto pki certificate chain DNAC-CA
+ certificate ca 077FB8EB339589FFDDB5DA7E8AE8C13D0B64A616
+!
+port-channel load-balance src-dst-mixed-ip-port
+license boot level ipservicesk9
+!
+!
+diagnostic bootup level minimal
+!
+spanning-tree mode rapid-pvst
+spanning-tree portfast default
+spanning-tree portfast bpduguard default
+spanning-tree extend system-id
+spanning-tree vlan 1-4094 priority 8192
+archive
+ log config
+  logging enable
+  notify syslog contenttype plaintext
+ path flash:
+memory reserve critical 100
+!
+errdisable recovery cause udld
+errdisable recovery cause bpduguard
+errdisable recovery cause security-violation
+errdisable recovery cause channel-misconfig
+errdisable recovery cause pagp-flap
+errdisable recovery cause dtp-flap
+errdisable recovery cause link-flap
+errdisable recovery cause sfp-config-mismatch
+errdisable recovery cause gbic-invalid
+errdisable recovery cause l2ptguard
+errdisable recovery cause psecure-violation
+errdisable recovery cause port-mode-failure
+errdisable recovery cause dhcp-rate-limit
+errdisable recovery cause pppoe-ia-rate-limit
+errdisable recovery cause mac-limit
+errdisable recovery cause vmps
+errdisable recovery cause storm-control
+errdisable recovery cause inline-power
+errdisable recovery cause arp-inspection
+errdisable recovery cause loopback
+errdisable recovery cause psp
+!
+username admin privilege 15 secret 5 $1$M.vb$4BxYApvQn/o5m02HNBMwq/
+!
+redundancy
+ mode sso
+!
+!
+!
+!
+!
+transceiver type all
+ monitoring
+!
+vlan 2
+ name DO-NOT-USE
+ shutdown
+!
+vlan 3
+ name INTERNET
+!
+vlan 4
+ name DMZ
+!
+vlan 6
+ name LB-INTERNAL
+!
+vlan 7-8 
+!
+vlan 10
+ name 151.110.239.0-AMSDC
+!
+vlan 11 
+!
+vlan 12
+ name 151.110.248.0-ProxyTransitNet
+!
+vlan 13
+ name 151.110.248.16-ProxyNet
+!
+vlan 20,26,30 
+!
+vlan 61
+ name 172.18.61.0-DC-Util-Storage-Net1
+!
+vlan 62
+ name 172.18.62.0-DC-ClusterHB-Net1
+!
+vlan 63
+ name 172.18.62.128-DC-iLO-Net1
+!         
+vlan 80
+ name ADX_DMZ_SYNC
+!
+vlan 81
+ name ADX_INT_SYNC
+!
+vlan 99
+ name BLACKHOLE_SHUTDOWN_VLAN
+ state suspend
+ shutdown
+!
+vlan 163
+ name DATACENTER_PRODUCTION
+!
+vlan 169
+ name FW_SYNC
+!
+vlan 192
+ name DATACENTER_VMOTION
+!
+vlan 207
+ name FW_IVE_DUMMY
+!
+vlan 500-501 
+!
+vlan 550
+ name 10.253.9.32-ATT-EVPN-PTP
+!
+vlan 551
+ name 10.253.9.36-ATT-EVPN-PTP
+!
+vlan 552
+ name 10.253.9.40-ATT-EVPN-PTP
+!
+vlan 553
+ name 10.253.9.44-ATT-EVPN-PTP
+!
+vlan 554
+ name 32.37.38.176-ATT-BGP-PEERING-NET
+!
+vlan 555
+ name 10.253.0.0-NETMGMT-AMSDC
+!
+vlan 556
+ name 10.253.0.128-WIRELESS-MGMT
+!
+vlan 560
+ name VPN-HORATIO-transit
+!
+vlan 561
+ name VOICE-CUBE-SBC-transit
+!
+vlan 562
+ name VPN-MSD-transit
+!
+vlan 570
+ name 10.127.138.16/28-Teams-Voice
+!
+vlan 571
+ name 10.127.139.16/28-Teams-Voice-2
+!
+vlan 572
+ name 10.127.138.48-Cryptshare
+!
+vlan 574
+ name 10.251.254.0/24-Net-Tools
+!
+vlan 575
+ name 151.110.17.x-DNS-DHCP-NTP
+!
+vlan 590
+ name WLC-HeartBeat
+!
+vlan 591  
+ name CatalystCenter-HeartBeat
+!
+vlan 620
+ name SDW1_Transport_VPN1
+!
+vlan 621
+ name SDW1_Transport_VPN4
+!
+vlan 622
+ name SDW1_Service_VPN1
+!
+vlan 623
+ name SDW1_Service_VPN4
+!
+vlan 624
+ name SDW1_B2B_MPLS
+!
+vlan 630
+ name SDW2_Transport_VPN1
+!
+vlan 631
+ name SDW2_Transport_VPN4
+!
+vlan 632
+ name SDW2_Service_VPN1
+!
+vlan 633
+ name SDW2_Service_VPN4
+!
+vlan 634
+ name SDW2_B2B_MPLS
+!
+vlan 666,805 
+!
+vlan 950
+ name 10.151.5.128-AvayaGeneral
+!
+vlan 953
+ name 10.153.252.64-VMotion&HB
+!
+vlan 954
+ name 10.153.252.0-CiscoVM
+!
+vlan 955
+ name AVAYA_PRIVATE
+!
+vlan 956
+ name AVAYA_SERVER_CONTROL_C
+!
+vlan 957
+ name 10.151.5.32-Avaya-Control-B
+!
+vlan 958
+ name 10.151.5.64-Avaya-Control-A
+!
+vlan 959
+ name 10.151.5.160-Avaya-Applications
+!
+vlan 969
+ name 10.151.5.96-Avaya-Messaging
+!
+vlan 1502
+ name 10-220.128.0-VCE-OOB-MGMT
+!
+vlan 1503
+ name 10-220.132.0-VCE-ESXI-MGMT
+!
+vlan 1504
+ name 10.220.136.0-VCE-ESXI-VMOTION
+lldp run
+!
+!
+class-map match-any system-cpp-police-topology-control
+  description Topology control
+class-map match-any system-cpp-police-sw-forward
+  description Sw forwarding, L2 LVX data, LOGGING
+class-map match-any system-cpp-default
+  description Inter FED, EWLC control, EWLC data
+class-map match-any system-cpp-police-sys-data
+  description Learning cache ovfl, High Rate App, Exception, EGR Exception, NFL SAMPLED DATA, RPF Failed
+class-map match-any system-cpp-police-punt-webauth
+  description Punt Webauth
+class-map match-any system-cpp-police-l2lvx-control
+  description L2 LVX control packets
+class-map match-any system-cpp-police-forus
+  description Forus Address resolution and Forus traffic
+class-map match-any system-cpp-police-multicast-end-station
+  description MCAST END STATION
+class-map match-any system-cpp-police-multicast
+  description Transit Traffic and MCAST Data
+class-map match-any system-cpp-police-l2-control
+  description L2 control
+class-map match-any system-cpp-police-dot1x-auth
+  description DOT1X Auth
+class-map match-any system-cpp-police-data
+  description ICMP redirect, ICMP_GEN and BROADCAST
+class-map match-any system-cpp-police-stackwise-virt-control
+  description Stackwise Virtual
+class-map match-any system-cpp-police-control-low-priority
+  description ICMP redirect and general punt
+class-map match-any system-cpp-police-wireless-priority1
+  description Wireless priority 1
+class-map match-any system-cpp-police-wireless-priority2
+  description Wireless priority 2
+class-map match-any system-cpp-police-wireless-priority3-4-5
+  description Wireless priority 3,4 and 5
+class-map match-any non-client-nrt-class
+class-map match-any system-cpp-police-routing-control
+  description Routing control and Low Latency
+class-map match-any system-cpp-police-protocol-snooping
+  description Protocol snooping
+class-map match-any system-cpp-police-dhcp-snooping
+  description DHCP snooping
+class-map match-any system-cpp-police-system-critical
+  description System Critical and Gold Pkt
+!
+policy-map system-cpp-policy
+ class system-cpp-police-data
+  police rate 200 pps
+ class system-cpp-police-routing-control
+  police rate 1800 pps
+ class system-cpp-police-control-low-priority
+ class system-cpp-police-wireless-priority1
+ class system-cpp-police-wireless-priority2
+ class system-cpp-police-wireless-priority3-4-5
+policy-map port_child_policy
+ class non-client-nrt-class
+  bandwidth remaining ratio 10
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ description NET:10.253.9.60-OSPF Router-ID
+ ip address 10.253.9.60 255.255.255.255
+ ip ospf 10 area 0.0.0.0
+!
+interface Loopback7777
+ ip address 10.253.250.5 255.255.255.255
+!
+interface Port-channel1
+ description WLC AMIDC-WLC.1 10.253.0.120 PORT-CHANNEL 
+ switchport trunk native vlan 99
+ switchport mode trunk
+!
+interface Port-channel2
+ description WLC AMIDC-WLC.2 10.253.0.121 PORT-CHANNEL 
+ switchport trunk native vlan 99
+ switchport mode trunk
+!
+interface Port-channel3
+ description WLC AMIDC-WLC.3 10.253.0.133 PORT-CHANNEL 
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 556
+ switchport mode trunk
+!
+interface Port-channel4
+ description WLC AMIDC-WLC.4 10.253.0.134 PORT-CHANNEL 
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 556
+ switchport mode trunk
+!
+interface Port-channel5
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 4
+ switchport mode trunk
+ shutdown
+!
+interface Port-channel6
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 4
+ switchport mode trunk
+ shutdown
+!
+interface Port-channel7
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10-12
+ switchport mode trunk
+ shutdown
+!
+interface Port-channel8
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10-12
+ switchport mode trunk
+ shutdown
+!
+interface Port-channel9
+ description emeabigiph1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+!
+interface Port-channel10
+ description emeabigiph2
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+!
+interface Port-channel11
+ description EMEABigIPh1 PORT-CHANNEL 
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+!
+interface Port-channel12
+ description EMEABigIPh2 PORT-CHANNEL 
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ hold-queue 1000 out
+!         
+interface Port-channel13
+ description EMEABigIPh1 PORT-CHANNEL
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+!
+interface Port-channel14
+ description EMEABigIPh2 PORT-CHANNEL
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+!
+interface Port-channel15
+ description NET:NLEACOAMS0011H G0/0/0-0/0/2 Secondary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 551
+ switchport mode trunk
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface Port-channel16
+ description NET:NLEACOAMS0012H G0/0/0-0/0/2 Secondary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 552
+ switchport mode trunk
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+!
+interface Port-channel31
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 4,10,61,163,207,570,571,575,950,1502-1504,1508
+ switchport mode trunk
+ shutdown
+!
+interface Port-channel32
+ description VXRAIL 4 NODE UC TOR amidcnsm0104 AND amidcnsm0105 PORT-CHANNEL 
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,61,163,207,555,560,570,571,575,590,950
+ switchport trunk allowed vlan add 953,954,1502-1504,1508
+ switchport mode trunk
+!
+interface Port-channel35
+ description WLC:AMIDCnwm0101(b)
+ switchport trunk native vlan 99
+ switchport mode trunk
+!
+interface Port-channel36
+ description WLC:AMIDCnwm0101(a)
+ switchport trunk native vlan 99
+ switchport mode trunk
+!
+interface Port-channel40
+ description UNUSED
+ switchport trunk allowed vlan 10,207
+ switchport mode trunk
+ shutdown
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface Port-channel41
+ description UNUSED
+ switchport trunk allowed vlan 10,207
+ switchport mode trunk
+ shutdown
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface Port-channel50
+ description NET:Amidcnrm0101 TE0/0/3-Te0/0/4
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 622,623
+ switchport mode trunk
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface Port-channel51
+ description NET:Amidcnrm0102 TE0/0/3-Te0/0/4
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 623,632
+ switchport mode trunk
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface Port-channel52
+ description NET:Amidcnrm0101 Te0/0/5 B2B MPLS
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 624
+ switchport mode trunk
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface Port-channel53
+ description NET:Amidcnrm0102 Te0/0/5 SDWAN2 MPLS B2B
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 634
+ switchport mode trunk
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface Port-channel54
+ description EXTRAHOP
+ switchport mode trunk
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface Port-channel71
+ description EMEAFW1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,7,10,207,560,562,570,571
+ switchport mode trunk
+!
+interface Port-channel72
+ description EMEAFW2
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,7,10,207,560,562,570,571
+ switchport mode trunk
+!
+interface Port-channel73
+ description emeaavtsfw2-v8
+ switchport access vlan 8
+ switchport mode access
+ spanning-tree bpduguard disable
+!
+interface Port-channel74
+ description emeaavtsfw2-v554
+ switchport access vlan 554
+ switchport mode access
+ spanning-tree bpduguard disable
+!
+interface Port-channel75
+ description emeaavtsfw1-v8
+ switchport access vlan 8
+ switchport mode access
+ spanning-tree bpduguard disable
+!
+interface Port-channel76
+ description emeaavtsfw1-v554
+ switchport access vlan 554
+ switchport mode access
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet0/0
+ vrf forwarding Mgmt-vrf
+ no ip address
+ negotiation auto
+!
+interface TenGigabitEthernet1/0/1
+ description emeabigiph1_2.1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ channel-group 9 mode active
+!
+interface TenGigabitEthernet1/0/2
+ description emeabigiph2_2.1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ channel-group 10 mode active
+!
+interface TenGigabitEthernet1/0/3
+ description NET:VXRAIL TOR amidcnsm0104 ETH1/49/1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,61,163,207,555,560,570,571,575,590,950
+ switchport trunk allowed vlan add 953,954,1502-1504,1508
+ switchport mode trunk
+ channel-group 32 mode active
+!
+interface TenGigabitEthernet1/0/4
+ description NET:VXRAIL TOR amidcnsm0105 ETH1/49/1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,61,163,207,555,560,570,571,575,590,950
+ switchport trunk allowed vlan add 953,954,1502-1504,1508
+ switchport mode trunk
+ channel-group 32 mode active
+!
+interface TenGigabitEthernet1/0/5
+ description WLC:AMIDCnwm0101(b)
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 35 mode on
+!
+interface TenGigabitEthernet1/0/6
+ description WLC:AMIDCnwm0101(a)
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 36 mode on
+!
+interface TenGigabitEthernet1/0/7
+ description SDWAN RESERVED
+ switchport trunk allowed vlan 3
+ switchport mode trunk
+ spanning-tree portfast trunk
+!
+interface TenGigabitEthernet1/0/8
+ description EMEAFW1-eth1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,7,10,207,560,562,570,571
+ switchport mode trunk
+ channel-group 71 mode active
+!
+interface TenGigabitEthernet1/0/9
+ description EMEAFW2-eth1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,7,10,207,560,562,570,571
+ switchport mode trunk
+ channel-group 72 mode active
+!
+interface TenGigabitEthernet1/0/10
+ description NET:NLEACOAMS0011H Te0/3/0 Primary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 7,550,554,560,562,620,621,624
+ switchport mode trunk
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet1/0/11
+ description NET:Amidcnrm0101 Te0/0/2 Primary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 620,621
+ switchport mode trunk
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet1/0/12
+ description NET:Amidcnrm0101 Te0/0/3 Primary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 622,623
+ switchport mode trunk
+ channel-group 50 mode active
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet1/0/13
+ description RTR:ATT INTERNET ADIG NLEACEAMS0001R Te0/3/0 Primary 
+ switchport access vlan 3
+ switchport mode access
+!
+interface TenGigabitEthernet1/0/14
+ description Extra Hop Reserved
+ switchport mode trunk
+ channel-group 54 mode on
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet1/0/15
+ description NET:Amidcnrm0102 Te0/0/4 Primary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 623,632
+ switchport mode trunk
+ channel-group 51 mode active
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet1/0/16
+ description NET:Amidcnrm0101 Te0/0/5 B2B MPLS
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 624
+ switchport mode trunk
+ channel-group 52 mode active
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet1/0/17
+ description SDWAN RESERVED
+ switchport trunk allowed vlan 3
+ switchport mode trunk
+ spanning-tree portfast trunk
+!
+interface TenGigabitEthernet1/0/18
+ description amidcnmdna01 - S1P1 (Enterprise)
+ switchport access vlan 574
+ switchport mode access
+!
+interface TenGigabitEthernet1/0/19
+ description amidcnmdna01 - S1P2 (Intracluster)
+ switchport access vlan 591
+ switchport mode access
+!
+interface TenGigabitEthernet1/0/20
+ description amidcnmdna02 - S1P1 (Enterprise)
+ switchport access vlan 574
+ switchport mode access
+!
+interface TenGigabitEthernet1/0/21
+ description amidcnmdna02 - S1P2 (Intracluster)
+ switchport access vlan 591
+ switchport mode access
+!
+interface TenGigabitEthernet1/0/22
+ description NET:GIGAMON SPAN X1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 4,10,163,555
+ switchport mode trunk
+!         
+interface TenGigabitEthernet1/0/23
+ description amidcnmdna03 - S1P1 (Enterprise)
+ switchport access vlan 574
+ switchport mode access
+!
+interface TenGigabitEthernet1/0/24
+ description amidcnmdna03 - S1P2 (Intracluster)
+ switchport access vlan 591
+ switchport mode access
+!
+interface TenGigabitEthernet1/1/1
+!
+interface TenGigabitEthernet1/1/2
+!
+interface TenGigabitEthernet1/1/3
+!
+interface TenGigabitEthernet1/1/4
+!
+interface TenGigabitEthernet1/1/5
+!
+interface TenGigabitEthernet1/1/6
+!
+interface TenGigabitEthernet1/1/7
+!
+interface TenGigabitEthernet1/1/8
+!
+interface FortyGigabitEthernet1/1/1
+!
+interface FortyGigabitEthernet1/1/2
+!
+interface TenGigabitEthernet2/0/1
+ description emeabigiph1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ channel-group 10 mode active
+!
+interface TenGigabitEthernet2/0/2
+ description emeabigiph1_2.2
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ channel-group 9 mode active
+!
+interface TenGigabitEthernet2/0/3
+ description NET:VXRAIL TOR amidcnsm0104 ETH1/50/1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,61,163,207,555,560,570,571,575,590,950
+ switchport trunk allowed vlan add 953,954,1502-1504,1508
+ switchport mode trunk
+ channel-group 32 mode active
+!
+interface TenGigabitEthernet2/0/4
+ description NET:VXRAIL TOR amidcnsm0105 ETH1/50/1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,61,163,207,555,560,570,571,575,590,950
+ switchport trunk allowed vlan add 953,954,1502-1504,1508
+ switchport mode trunk
+ channel-group 32 mode active
+!
+interface TenGigabitEthernet2/0/5
+ description WLC:AMIDCnwm0101(b)
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 35 mode on
+!
+interface TenGigabitEthernet2/0/6
+ description WLC:AMIDCnwm0101(a)
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 36 mode on
+!
+interface TenGigabitEthernet2/0/7
+ description SDWAN RESERVED
+ switchport trunk allowed vlan 3
+ switchport mode trunk
+ spanning-tree portfast trunk
+!
+interface TenGigabitEthernet2/0/8
+ description EMEAFW1-eth2
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,7,10,207,560,562,570,571
+ switchport mode trunk
+ channel-group 71 mode active
+!
+interface TenGigabitEthernet2/0/9
+ description EMEAFW2-eth2
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,7,10,207,560,562,570,571
+ switchport mode trunk
+ channel-group 72 mode active
+!
+interface TenGigabitEthernet2/0/10
+ description NET:NLEACOAMS0012H Te0/3/0 Primary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 7,553,554,560,562,630,631,634
+ switchport mode trunk
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet2/0/11
+ description NET:Amidcnrm0102 Te0/0/2 Primary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 630,631
+ switchport mode trunk
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet2/0/12
+ description NET:Amidcnrm0102 Te0/0/3 Primary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 623,632
+ switchport mode trunk
+ channel-group 51 mode active
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet2/0/13
+ description RTR:ATT INTERNET ADIG NLEACEAMS0002R Te0/3/0 Secondary 
+ switchport access vlan 3
+ switchport mode access
+!
+interface TenGigabitEthernet2/0/14
+ description Extra Hop Reserved
+ switchport mode trunk
+ channel-group 54 mode on
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet2/0/15
+ description NET:Amidcnrm0101 Te0/0/4 Primary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 622,623
+ switchport mode trunk
+ channel-group 50 mode active
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet2/0/16
+ description NET:Amidcnrm0102 Te0/0/5 SDWAN2 MPLS B2B
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 634
+ switchport mode trunk
+ channel-group 53 mode active
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface TenGigabitEthernet2/0/17
+ description SDWAN RESERVED
+ switchport trunk allowed vlan 3
+ switchport mode trunk
+ spanning-tree portfast trunk
+!
+interface TenGigabitEthernet2/0/18
+ description amidcnmdna01 - S3P2 (Enterprise)
+ switchport access vlan 574
+ switchport mode access
+!
+interface TenGigabitEthernet2/0/19
+ description amidcnmdna01 - S3P1 (Intracluster)
+ switchport access vlan 591
+ switchport mode access
+!
+interface TenGigabitEthernet2/0/20
+ description amidcnmdna02 - S3P2 (Enterprise)
+ switchport access vlan 574
+ switchport mode access
+!
+interface TenGigabitEthernet2/0/21
+ description amidcnmdna02 - S3P1 (Intracluster)
+ switchport access vlan 591
+ switchport mode access
+!
+interface TenGigabitEthernet2/0/22
+ description NET:GIGAMON SPAN X2
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 4,10,163,555
+ switchport mode trunk
+!
+interface TenGigabitEthernet2/0/23
+ description amidcnmdna03 - S3P2 (Enterprise)
+ switchport access vlan 574
+ switchport mode access
+!
+interface TenGigabitEthernet2/0/24
+ description amidcnmdna03 - S3P1 (Intracluster)
+ switchport access vlan 591
+ switchport mode access
+!
+interface TenGigabitEthernet2/1/1
+!
+interface TenGigabitEthernet2/1/2
+!
+interface TenGigabitEthernet2/1/3
+!
+interface TenGigabitEthernet2/1/4
+!
+interface TenGigabitEthernet2/1/5
+!
+interface TenGigabitEthernet2/1/6
+!
+interface TenGigabitEthernet2/1/7
+!
+interface TenGigabitEthernet2/1/8
+!
+interface FortyGigabitEthernet2/1/1
+!
+interface FortyGigabitEthernet2/1/2
+!
+interface GigabitEthernet3/0/1
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 7,550,554
+ switchport mode trunk
+ shutdown
+ speed 1000
+ duplex full
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet3/0/2
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 551
+ switchport mode trunk
+ shutdown
+ speed 1000
+ duplex full
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet3/0/3
+ description WAN:IOSETC0001 AVTS IN Gi0/1
+ switchport access vlan 8
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/4
+ description WAN:IOSETC0001 AVTS OUT
+ switchport access vlan 3
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/5
+ description WLC AMIDC-WLC.1 10.253.0.120 PO1
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 1 mode on
+!
+interface GigabitEthernet3/0/6
+ description WLC AMIDC-WLC.2 10.253.0.121 PO2
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 2 mode on
+!
+interface GigabitEthernet3/0/7
+ description WLC AMIDC-WLC.3 10.253.0.133 PO3
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 556
+ switchport mode trunk
+ channel-group 3 mode on
+!
+interface GigabitEthernet3/0/8
+ description WLC AMIDC-WLC.4 10.253.0.134 PO4
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 556
+ switchport mode trunk
+ channel-group 4 mode on
+!
+interface GigabitEthernet3/0/9
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 4
+ switchport mode trunk
+ shutdown
+ channel-group 5 mode active
+!
+interface GigabitEthernet3/0/10
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 4
+ switchport mode trunk
+ shutdown
+ channel-group 6 mode active
+!
+interface GigabitEthernet3/0/11
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10-12
+ switchport mode trunk
+ shutdown
+ channel-group 7 mode active
+!
+interface GigabitEthernet3/0/12
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10-12
+ switchport mode trunk
+ shutdown
+ channel-group 8 mode active
+!
+interface GigabitEthernet3/0/13
+ description VOICE-CUBE-SBC-transit-AMIDCCUBE4461A
+ switchport access vlan 561
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/14
+ description VOICE-CUBE-SBC-transit-AMIDCCUBE4461B
+ switchport access vlan 561
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/15
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet3/0/16
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet3/0/17
+ description emeaavtsfw2-E1
+ switchport access vlan 8
+ switchport mode access
+ no cdp enable
+ channel-group 73 mode active
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet3/0/18
+ description UNUSED
+ switchport access vlan 169
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/19
+ description emeaavtsfw2-E5
+ switchport access vlan 554
+ switchport mode access
+ no cdp enable
+ channel-group 74 mode active
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet3/0/20
+ description emeaavtsfw2-E4
+ switchport access vlan 554
+ switchport mode access
+ no cdp enable
+ channel-group 74 mode active
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet3/0/21
+ description emeaavtsfw2-E3
+ switchport access vlan 10
+ switchport mode access
+!
+interface GigabitEthernet3/0/22
+ description emeaavtsfw2-E2
+ switchport access vlan 8
+ switchport mode access
+ no cdp enable
+ channel-group 73 mode active
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet3/0/23
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown 
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/24
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet3/0/25
+ description GIGAMON GIGAVUE-420 MGMT 151.110.239.249
+ switchport access vlan 10
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/26
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet3/0/27
+ description UNUSED
+ switchport access vlan 3
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/28
+ description UNUSED
+ switchport access vlan 7
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/29
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/30
+ description FW SWITCH-emea1 
+ switchport access vlan 10
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/31
+ description EMEAFW2-mgmt0
+ switchport access vlan 575
+ switchport mode access
+!
+interface GigabitEthernet3/0/32
+ description UNUSED
+ switchport access vlan 3
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/33
+ description UNUSED
+ switchport access vlan 13
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/34
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet3/0/35
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet3/0/36
+ description emeaavtsfw1-MGMT     
+ switchport access vlan 575
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/37
+ description UNUSED
+ switchport access vlan 207
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/38
+ description UNUSED
+ switchport access vlan 4
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/39
+ description UNUSED
+ switchport access vlan 207
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/40
+ description UNUSED
+ switchport access vlan 207
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/41
+ description UNUSED
+ switchport access vlan 81
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/42
+ description UNUSED
+ switchport access vlan 81
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/43
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet3/0/44
+ description UNUSED
+ switchport access vlan 554
+ switchport mode access
+ shutdown
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet3/0/45
+ description UNUSED
+ switchport access vlan 8
+ switchport mode access
+ shutdown
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet3/0/46
+ description WLC:AMIDCnwm0101(b) CIMC 
+ switchport access vlan 555
+ switchport mode access
+!
+interface GigabitEthernet3/0/47
+ description UNUSED
+ shutdown
+!         
+interface GigabitEthernet3/0/48
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet3/1/1
+!
+interface GigabitEthernet3/1/2
+!
+interface GigabitEthernet3/1/3
+!
+interface GigabitEthernet3/1/4
+!
+interface TenGigabitEthernet3/1/1
+!
+interface TenGigabitEthernet3/1/2
+!
+interface TenGigabitEthernet3/1/3
+!
+interface TenGigabitEthernet3/1/4
+!
+interface GigabitEthernet4/0/1
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 7,553,554
+ switchport mode trunk
+ shutdown
+ speed 1000
+ duplex full
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet4/0/2
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 552
+ switchport mode trunk
+ shutdown
+ speed 1000
+ duplex full
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet4/0/3
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/4
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet4/0/5
+ description WLC AMIDC-WLC.1 10.253.0.120 PO1 
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 1 mode on
+!
+interface GigabitEthernet4/0/6
+ description WLC AMIDC-WLC.2 10.253.0.121 PO2 
+ switchport trunk native vlan 99
+ switchport mode trunk
+ channel-group 2 mode on
+!
+interface GigabitEthernet4/0/7
+ description WLC AMIDC-WLC.3 10.253.0.133 PO3 
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 556
+ switchport mode trunk
+ channel-group 3 mode on
+!
+interface GigabitEthernet4/0/8
+ description WLC AMIDC-WLC.4 10.253.0.134 PO4 
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 556
+ switchport mode trunk
+ channel-group 4 mode on
+!
+interface GigabitEthernet4/0/9
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 4
+ switchport mode trunk
+ shutdown
+ channel-group 5 mode active
+!
+interface GigabitEthernet4/0/10
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 4
+ switchport mode trunk
+ shutdown
+ channel-group 6 mode active
+!
+interface GigabitEthernet4/0/11
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10-12
+ switchport mode trunk
+ shutdown
+ channel-group 7 mode active
+!
+interface GigabitEthernet4/0/12
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 10-12
+ switchport mode trunk
+ shutdown
+ channel-group 8 mode active
+!
+interface GigabitEthernet4/0/13
+ description AMIDCCUBE4461A-VOICE-CUBE-Gi0/1
+ switchport access vlan 954
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/14
+ description AMIDCCUBE4461B-VOICE-CUBE-Gi0/1
+ switchport access vlan 954
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/15
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet4/0/16
+ description UNUSED
+ switchport access vlan 560
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/17
+ description emeaavtsfw1-E1
+ switchport access vlan 8
+ switchport mode access
+ channel-group 75 mode active
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet4/0/18
+ description UNUSED
+ switchport access vlan 169
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!         
+interface GigabitEthernet4/0/19
+ description emeaavtsfw1-E5
+ switchport access vlan 554
+ switchport mode access
+ channel-group 76 mode active
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet4/0/20
+ description emeaavtsfw1-E4
+ switchport access vlan 554
+ switchport mode access
+ channel-group 76 mode active
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet4/0/21
+ description emeaavtsfw1-E3
+ switchport access vlan 10
+ switchport mode access
+!
+interface GigabitEthernet4/0/22
+ description emeaavtsfw1-E2
+ switchport access vlan 8
+ switchport mode access
+ channel-group 75 mode active
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet4/0/23
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet4/0/24
+ description UNUSED
+ switchport access vlan 3
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/25
+ description UNUSED
+ switchport access vlan 13
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/26
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet4/0/27
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/28
+ description emeaavtsfw2-MGMT
+ switchport access vlan 575
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/29
+ description EMEAFW1-SYNC
+ switchport access vlan 169
+ switchport mode access
+!
+interface GigabitEthernet4/0/30
+ description EMEAFW2-LOM
+ switchport access vlan 575
+ switchport mode access
+!
+interface GigabitEthernet4/0/31
+ description UNUSED
+ switchport access vlan 207
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/32
+ description UNUSED
+ switchport access vlan 4
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/33
+ description UNUSED
+ switchport access vlan 4
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/34
+ description UNUSED
+ switchport access vlan 4
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/35
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/36
+ description UNUSED
+ switchport access vlan 81
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/37
+ description UNUSED
+ switchport access vlan 80
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/38
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/39
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/40
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ speed 1000
+ duplex full
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/41
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet4/0/42
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet4/0/43
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/44
+ description amidcnmdna01 - MGMT
+ switchport access vlan 63
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/45
+ description UNUSED
+ switchport access vlan 8
+ switchport mode access
+ shutdown
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet4/0/46
+ description WLC:AMIDCnwm0101(a) CIMC 
+ switchport access vlan 555
+ switchport mode access
+!
+interface GigabitEthernet4/0/47
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet4/0/48
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ speed 1000
+ duplex full
+ spanning-tree portfast
+!
+interface GigabitEthernet4/1/1
+!
+interface GigabitEthernet4/1/2
+!
+interface GigabitEthernet4/1/3
+!
+interface GigabitEthernet4/1/4
+!
+interface TenGigabitEthernet4/1/1
+!
+interface TenGigabitEthernet4/1/2
+!
+interface TenGigabitEthernet4/1/3
+!
+interface TenGigabitEthernet4/1/4
+!
+interface GigabitEthernet5/0/1
+ description RTR:AMIDC3945GW-01-G0/0 VOICE GATEWAY 
+ switchport access vlan 954
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/2
+ description AMIDCExtraHop01-iDRAC
+ switchport access vlan 10
+ switchport mode access
+!
+interface GigabitEthernet5/0/3
+ description SDWAN management
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan none
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet5/0/4
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 954
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet5/0/5
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 954
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet5/0/6
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 953
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet5/0/7
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 953
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet5/0/8
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 953
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet5/0/9
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 953
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet5/0/10
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/11
+ description emeabigiph1 port 1.1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ power inline never
+ channel-group 11 mode active
+!
+interface GigabitEthernet5/0/12
+ description UNUSED
+ switchport access vlan 953
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/13
+ description emeabigiph2 port 1.1
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ power inline never
+ channel-group 12 mode active
+ hold-queue 1000 out
+!         
+interface GigabitEthernet5/0/14
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/15
+ description UNUSED
+ switchport access vlan 207
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/16
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/17
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ shutdown
+ power inline never
+ channel-group 13 mode active
+!
+interface GigabitEthernet5/0/18
+ description emeabigiph1 port 1.3
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ power inline never
+ channel-group 13 mode active
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/19
+ description emeabigiph2 port 1.3
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ power inline never
+ channel-group 14 mode active
+!
+interface GigabitEthernet5/0/20
+ description NET:NLEACOAMS0011H G0/0/0 Secondary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 551
+ switchport mode trunk
+ channel-group 15 mode active
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet5/0/21
+ description NET:NLEACOAMS0011H G0/0/1 Secondary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 551
+ switchport mode trunk
+ channel-group 15 mode active
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet5/0/22
+ description NET:NLEACOAMS0011H G0/0/2 Secondary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 551
+ switchport mode trunk
+ channel-group 15 mode active
+ spanning-tree portfast trunk
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet5/0/23
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/24
+ description UNUSED
+ switchport access vlan 953
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/25
+ description UNUSED
+ switchport access vlan 953
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/26
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/27
+ description EMEAFW1-mgmt0
+ switchport access vlan 575
+ switchport mode access
+ power inline never
+!
+interface GigabitEthernet5/0/28
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/29
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/30
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/31
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ switchport voice vlan 950
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/32
+ description UNUSED
+ switchport access vlan 956
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/33
+ description UNUSED
+ switchport access vlan 956
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/34
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/35
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/36
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/37
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/38
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/39
+ description UNUSED
+ switchport access vlan 959
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/40
+ description UNUSED
+ switchport access vlan 958
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/41
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/42
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/43
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet5/0/44
+ description amidcnmdna02 - MGMT
+ switchport access vlan 63
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/45
+ description NETSCOUT-NEW-IPMI
+ switchport access vlan 10
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/46
+ description NETSCOUT-NEW-E0
+ switchport access vlan 10
+ switchport mode access
+ speed 1000
+ duplex full
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/47
+ description TERMINAL SERVER AMIDCncm0101 SECONDARY 
+ switchport access vlan 555
+ switchport mode access
+ power inline never
+ spanning-tree portfast
+!
+interface GigabitEthernet5/0/48
+ description UNUSED
+ shutdown
+!         
+interface GigabitEthernet5/1/1
+!
+interface GigabitEthernet5/1/2
+!
+interface GigabitEthernet5/1/3
+!
+interface GigabitEthernet5/1/4
+!
+interface TenGigabitEthernet5/1/1
+!
+interface TenGigabitEthernet5/1/2
+!
+interface TenGigabitEthernet5/1/3
+!
+interface TenGigabitEthernet5/1/4
+!
+interface GigabitEthernet6/0/1
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/2
+ description AMIDCExtraHop01-Eth1(MGMT)
+ switchport access vlan 10
+ switchport mode access
+!
+interface GigabitEthernet6/0/3
+ description SDWAN management
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan none
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet6/0/4
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 954
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet6/0/5
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 954
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet6/0/6
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 953
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet6/0/7
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 953
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet6/0/8
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 953
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet6/0/9
+ description UNUSED
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 953
+ switchport mode trunk
+ shutdown
+!         
+interface GigabitEthernet6/0/10
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/11
+ description emeabigiph1 port 1.2
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ channel-group 11 mode active
+!
+interface GigabitEthernet6/0/12
+ description emeabigiph1 port mgmt
+ switchport access vlan 555
+ switchport mode access
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet6/0/13
+ description emeabigiph2 port 1.2
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ channel-group 12 mode active
+ hold-queue 1000 out
+!
+interface GigabitEthernet6/0/14
+ description emeabigiph2 port mgmt
+ switchport access vlan 555
+ switchport mode access
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet6/0/15
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/16
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/17
+ description emeabigiph1 port 1.4
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ power inline never
+ channel-group 13 mode active
+!
+interface GigabitEthernet6/0/18
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/19
+ description emeabigiph2 port 1.4
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 3,4,10,12,13,80,81,560,562,570-572
+ switchport mode trunk
+ power inline never
+ channel-group 14 mode active
+!
+interface GigabitEthernet6/0/20
+ description NET:NLEACOAMS0012H G0/0/0 Secondary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 552
+ switchport mode trunk
+ channel-group 16 mode active
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet6/0/21
+ description NET:NLEACOAMS0012H G0/0/1 Secondary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 552
+ switchport mode trunk
+ channel-group 16 mode active
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet6/0/22
+ description NET:NLEACOAMS0012H G0/0/2 Secondary
+ switchport trunk native vlan 99
+ switchport trunk allowed vlan 552
+ switchport mode trunk
+ channel-group 16 mode active
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+!
+interface GigabitEthernet6/0/23
+ description UNUSED
+ switchport trunk native vlan 555
+ switchport mode trunk
+ shutdown
+!
+interface GigabitEthernet6/0/24
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/25
+ description EMEAFW2-SYNC
+ switchport access vlan 169
+ switchport mode access
+!
+interface GigabitEthernet6/0/26
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/27
+ description EMEAFW1-LOM
+ switchport access vlan 575
+ switchport mode access
+!
+interface GigabitEthernet6/0/28
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/29
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/30
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/31
+ description UNUSED
+ switchport access vlan 956
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/32
+ description UNUSED
+ switchport access vlan 956
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/33
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/34
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/35
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/36
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/37
+ description UNUSED
+ switchport access vlan 10
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/38
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/39
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/40
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/41
+ description UNUSED
+ switchport access vlan 950
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/42
+ description UNUSED
+ switchport access vlan 959
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/43
+ description UNUSED
+ switchport access vlan 957
+ switchport mode access
+ shutdown
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/44
+ description amidcnmdna03 - MGMT
+ switchport access vlan 63
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet6/0/45
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/46
+ description UNUSED
+ shutdown
+!
+interface GigabitEthernet6/0/47
+ description UNUSED
+ switchport access vlan 163
+ switchport mode access
+ shutdown
+!
+interface GigabitEthernet6/0/48
+ description TERMINAL SERVER AMIDCncm0101 PRIMARY 10.253.0.2 
+ switchport access vlan 555
+ switchport mode access
+ spanning-tree portfast
+!
+interface GigabitEthernet6/1/1
+!
+interface GigabitEthernet6/1/2
+!
+interface GigabitEthernet6/1/3
+!
+interface GigabitEthernet6/1/4
+!
+interface TenGigabitEthernet6/1/1
+!
+interface TenGigabitEthernet6/1/2
+!
+interface TenGigabitEthernet6/1/3
+!
+interface TenGigabitEthernet6/1/4
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+interface Vlan10
+ description DATACENTER_INTERNAL_NETWORK 
+ ip address 151.110.239.254 255.255.255.0
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan12
+ description IPS_TRANSIT_VLAN 
+ ip address 151.110.248.1 255.255.255.240
+ no ip redirects
+ no ip proxy-arp
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan61
+ description DATACENTER_UTILITY_STORAGE_NETWORK 
+ ip address 172.18.61.254 255.255.255.0
+ no ip redirects
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan62
+ description DATACENTER_CLUSTER_HEARTBEATS_NETWORK 
+ ip address 172.18.62.126 255.255.255.128
+ no ip redirects
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan63
+ description DATACENTER_ILO_OOB_NETWORK 
+ ip address 172.18.62.254 255.255.255.128
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan163
+ description DATACENTER_PRODUCTION_NETWORK 
+ ip address 151.110.163.254 255.255.255.0
+ no ip redirects
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan550
+ description 10.253.9.32-ATT-EVPN-PTP
+ ip address 10.253.9.34 255.255.255.252
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 7 0715394E195113171E17530D0B237E757F
+ ip ospf network point-to-point
+ ip ospf bfd
+ ip ospf 10 area 0.0.0.0
+ bfd interval 300 min_rx 100 multiplier 3
+ no bfd echo
+!
+interface Vlan551
+ description 10.253.9.36-ATT-EVPN-PTP
+ ip address 10.253.9.38 255.255.255.252
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 7 08355E5A0241160E1E535C527838713E31
+ ip ospf network point-to-point
+ ip ospf bfd
+ ip ospf 10 area 0.0.0.0
+ ip ospf cost 10
+ bfd interval 300 min_rx 100 multiplier 3
+ no bfd echo
+!
+interface Vlan552
+ description 10.253.9.40-ATT-EVPN-PTP
+ ip address 10.253.9.42 255.255.255.252
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 7 087640440D1E5D0E455F580330723E3036
+ ip ospf network point-to-point
+ ip ospf bfd
+ ip ospf 10 area 0.0.0.0
+ ip ospf cost 10
+ bfd interval 300 min_rx 100 multiplier 3
+ no bfd echo
+!
+interface Vlan553
+ description 10.253.9.44-ATT-EVPN-PTP
+ ip address 10.253.9.46 255.255.255.252
+ ip ospf authentication message-digest
+ ip ospf message-digest-key 1 md5 7 06140A3440431F4D0E4244011E002D7B3E
+ ip ospf network point-to-point
+ ip ospf bfd
+ ip ospf 10 area 0.0.0.0
+ bfd interval 300 min_rx 100 multiplier 3
+ no bfd echo
+!
+interface Vlan555
+ description 10-253.0.0-MGMT 
+ ip address 10.253.0.1 255.255.255.128
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan556
+ description 10-253.0.128-WIRELESS MGMT 
+ ip address 10.253.0.129 255.255.255.128
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan561
+ description 10.253.9.192/29-VOICE-CUBE-SBC-transit
+ ip address 10.253.9.193 255.255.255.248
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan574
+ description Net-Tools
+ ip address 10.251.254.1 255.255.255.0
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan575
+ description 151.110.17.128-InfrSvcs
+ ip address 151.110.17.129 255.255.255.224
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan622
+ ip address 10.253.238.33 255.255.255.240
+ no ip proxy-arp
+ bfd interval 300 min_rx 100 multiplier 3
+!
+interface Vlan632
+ ip address 10.253.239.33 255.255.255.240
+ no ip proxy-arp
+ bfd interval 300 min_rx 100 multiplier 3
+!
+interface Vlan950
+ description AVAYA_GENERAL 
+ ip address 10.151.5.129 255.255.255.224
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan953
+ description AMIDC_CIMC_HEARTBEAT 
+ ip address 10.153.252.65 255.255.255.192
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan954
+ description AMIDC_UC_VOICE 
+ ip address 10.153.252.1 255.255.255.192
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan956
+ description AVAYA_SERVER_CONTROL_C 
+ ip address 10.151.5.1 255.255.255.224
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan957
+ description AVAYA_CONTROL_B 
+ ip address 10.151.5.33 255.255.255.224
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan958
+ description AVAYA_CONTROL_A 
+ ip address 10.151.5.65 255.255.255.224
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan959
+ description AVAYA_APPLICATIONS 
+ ip address 10.151.5.161 255.255.255.224
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan969
+ description AVAYA_MESSAGING 
+ ip address 10.151.5.97 255.255.255.224
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan1502
+ description 10-220.128.0-VCE-OOB-MGMT 
+ ip address 10.220.128.1 255.255.252.0
+ ip helper-address 151.110.17.11
+ ip helper-address 151.110.17.75
+ ip ospf 10 area 0.0.0.0
+!
+interface Vlan1503
+ description 10-220.132.0-VCE-ESXI-MGMT 
+ ip address 10.220.132.1 255.255.252.0
+ ip helper-address 151.110.17.11
+ ip helper-address 151.110.17.75
+ ip ospf 10 area 0.0.0.0
+!
+router ospf 10
+ router-id 10.253.9.60
+ redistribute static subnets route-map REDISTRIBUTE-STATIC-TO-OSPF10
+ passive-interface default
+ no passive-interface Vlan550
+ no passive-interface Vlan551
+ no passive-interface Vlan552
+ no passive-interface Vlan553
+ distribute-list route-map rmap-filter-ospf-in in
+!
+router bgp 64721
+ bgp log-neighbor-changes
+ neighbor 10.253.238.46 remote-as 65520
+ neighbor 10.253.238.46 password 7 14322D0A331015240A172322
+ neighbor 10.253.238.46 fall-over bfd
+ neighbor 10.253.239.46 remote-as 65520
+ neighbor 10.253.239.46 password 7 072A1E4D711D260A392D1B1B
+ neighbor 10.253.239.46 fall-over bfd
+ neighbor 151.110.239.1 remote-as 64722
+ neighbor 151.110.239.1 password 5 kcbn4hy2i678
+ neighbor 151.110.239.1 fall-over bfd
+ !        
+ address-family ipv4
+  network 10.127.138.25 mask 255.255.255.255
+  network 148.179.254.48 mask 255.255.255.240
+  redistribute connected route-map CONNECTED_CORE_TO_FW
+  neighbor 10.253.238.46 activate
+  neighbor 10.253.238.46 send-community both
+  neighbor 10.253.238.46 soft-reconfiguration inbound
+  neighbor 10.253.238.46 route-map SDWAN_TO_CORE in
+  neighbor 10.253.238.46 route-map CORE_TO_SDWAN out
+  neighbor 10.253.239.46 activate
+  neighbor 10.253.239.46 send-community both
+  neighbor 10.253.239.46 soft-reconfiguration inbound
+  neighbor 10.253.239.46 route-map SDWAN_TO_CORE in
+  neighbor 10.253.239.46 route-map CORE_TO_SDWAN out
+  neighbor 151.110.239.1 activate
+  neighbor 151.110.239.1 soft-reconfiguration inbound
+ exit-address-family
+!
+ip forward-protocol nd
+ip tcp synwait-time 10
+no ip http server
+no ip http secure-server
+ip http client source-interface Vlan555
+ip route 10.0.1.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-JDC
+ip route 10.0.4.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Clichy
+ip route 10.1.192.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 10.1.194.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 10.2.0.0 255.255.252.0 151.110.239.1 tag 1000 name VPN4-S-S-Versailles
+ip route 10.2.4.0 255.255.252.0 151.110.239.1 tag 1000 name VPN4-S-S-Champagne
+ip route 10.2.8.0 255.255.252.0 151.110.239.1 tag 1000 name VPN4-S-S-Marolles
+ip route 10.3.0.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Toulouse
+ip route 10.3.1.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Cluses
+ip route 10.3.2.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-LaFerte
+ip route 10.4.70.0 255.255.254.0 151.110.239.1 tag 1000 name CZBRN-VLAN70
+ip route 10.10.0.0 255.255.192.0 151.110.239.1 tag 1000 name AWS-VPN-TMP
+ip route 10.10.0.0 255.255.248.0 151.110.239.1 tag 1000 name AWS-VPN-TMP
+ip route 10.10.0.106 255.255.255.255 151.110.239.1 name AWS_Tunnel
+ip route 10.10.64.0 255.255.224.0 151.110.239.1 tag 1000 name AWS-VPN-TMP
+ip route 10.10.107.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Clichy
+ip route 10.16.0.0 255.255.252.0 151.110.239.1 tag 1000 name VPN4-S-S-Tanger
+ip route 10.19.0.0 255.255.0.0 151.110.239.1 tag 1000 name various-sites-on-VPN4
+ip route 10.19.3.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-CZCES-VLAN500
+ip route 10.36.48.0 255.255.240.0 151.110.239.1 tag 1000 name VPN4-S-S-Champagne
+ip route 10.84.0.0 255.255.240.0 151.110.239.1 tag 1000 name VPN4-S-S-Tanger
+ip route 10.96.0.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Inoue
+ip route 10.99.1.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Osaka
+ip route 10.100.231.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Clichy
+ip route 10.101.0.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Cochin
+ip route 10.103.0.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Coimbatore
+ip route 10.105.0.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Shanghai
+ip route 10.110.0.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Spay
+ip route 10.127.47.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 10.127.48.0 255.255.255.128 151.110.239.1 tag 1000
+ip route 10.127.48.128 255.255.255.128 151.110.239.1 tag 1000
+ip route 10.127.116.0 255.255.254.0 151.110.239.1 tag 1000 name VPN4-S-S-Champagne-DMZ
+ip route 10.127.118.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Marolles-DMZ
+ip route 10.127.119.0 255.255.255.128 151.110.239.1 tag 1000 name VPN4-S-S-Versailles-DMZ
+ip route 10.127.119.128 255.255.255.128 151.110.239.1 tag 1000 name VPN4-S-S-Tanger-DMZ
+ip route 10.127.120.0 255.255.255.128 151.110.239.1 tag 1000 name VPN4-S-S-Cluses-DMZ
+ip route 10.127.120.128 255.255.255.128 151.110.239.1 tag 1000 name VPN4-S-S-La-Ferte-DMZ
+ip route 10.127.123.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-Champagne-DMZ
+ip route 10.127.138.16 255.255.255.240 151.110.239.1 tag 1000 name Teams-Voice-EMEA
+ip route 10.127.138.25 255.255.255.255 151.110.239.1 name VoiceVG_Test
+ip route 10.127.138.48 255.255.255.240 151.110.239.1 tag 1000 name Cryptshare-VLAN572
+ip route 10.127.139.16 255.255.255.240 151.110.239.1 tag 1000 name Teams-Voice2-EMEA-VL571
+ip route 10.133.40.24 255.255.255.248 151.110.239.1 tag 1000 name PTALV-VPN4
+ip route 10.153.0.121 255.255.255.255 151.110.239.1 name INPU5-Loopback1
+ip route 10.156.104.0 255.255.252.0 151.110.239.1 tag 1000 name VPN4-CZPOH-VLAN950
+ip route 10.156.184.0 255.255.252.0 151.110.239.1 tag 1000 name VPN4-S-S-FRMOT
+ip route 10.168.42.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-GBPOR-Ultra
+ip route 10.168.43.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-GBKEL-Plexus
+ip route 10.215.72.224 255.255.255.224 151.110.239.1 tag 1000 name VPN4-GBBOU-Bastion
+ip route 10.223.1.0 255.255.255.0 151.110.239.1 tag 1000 name TDS-Anira-VPN4
+ip route 10.231.11.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-UAKIE
+ip route 10.231.100.224 255.255.255.224 151.110.239.1 tag 1000
+ip route 10.231.156.0 255.255.255.128 151.110.239.1 tag 1000
+ip route 10.231.255.0 255.255.255.0 151.110.239.1 tag 1000 name Blue-Yonder
+ip route 10.233.88.0 255.255.248.0 151.110.239.1 tag 1000 name VPN4-CZPOH-VLAN500
+ip route 10.233.96.0 255.255.248.0 151.110.239.1 tag 1000 name DECOL-VPN4
+ip route 10.233.104.0 255.255.248.0 151.110.239.1 tag 1000
+ip route 10.238.24.0 255.255.254.0 151.110.239.1 tag 1000
+ip route 10.238.49.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 10.238.82.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 10.238.83.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 10.238.195.0 255.255.255.0 151.110.239.1 tag 1000 name DECOL-VPN4
+ip route 10.239.24.0 255.255.254.0 151.110.239.1 tag 1000
+ip route 10.239.49.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 10.239.82.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 10.239.83.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 10.239.195.0 255.255.255.0 151.110.239.1 tag 1000 name DECOL-VPN4
+ip route 10.244.0.0 255.255.248.0 151.110.239.1 tag 1000 name VPN4-S-S-Champagne
+ip route 10.244.8.0 255.255.248.0 151.110.239.1 tag 1000 name VPN4-S-S-Cluses
+ip route 10.244.16.0 255.255.248.0 151.110.239.1 tag 1000 name VPN4-S-S-La-Ferte-Bernard
+ip route 10.244.24.0 255.255.248.0 151.110.239.1 tag 1000 name VPN4-S-S-Marolles-en-Brie
+ip route 10.244.32.0 255.255.248.0 151.110.239.1 tag 1000 name VPN4-S-S-Versailles
+ip route 10.244.40.0 255.255.248.0 151.110.239.1 tag 1000 name VPN4-S-S-Tanger
+ip route 10.244.64.0 255.255.240.0 151.110.239.1 tag 1000 name VPN4-S-S-Champagne
+ip route 10.244.80.0 255.255.248.0 151.110.239.1 tag 1000 name VPN4-S-S-Marolles
+ip route 10.244.136.0 255.255.248.0 151.110.239.1 tag 1000 name VPN4-S-S-FRMOT
+ip route 10.249.69.192 255.255.255.224 151.110.239.1 tag 1000 name GBBOU-transfer_networks-VPN4
+ip route 10.249.71.0 255.255.255.224 151.110.239.1 tag 1000
+ip route 10.249.71.160 255.255.255.224 151.110.239.1 tag 1000 name DECOL-VPN4
+ip route 10.249.72.0 255.255.255.224 151.110.239.1 tag 1000 name VPN4-CZPOH-VLAN550
+ip route 10.249.76.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-S-S-all-sites
+ip route 10.249.102.64 255.255.255.224 151.110.239.1 tag 1000 name VPN4-CZCES-Transit
+ip route 10.251.121.0 255.255.255.128 151.110.239.1 tag 1000
+ip route 10.253.16.128 255.255.255.128 151.110.239.1 tag 1000 name VPN4-CZBRN-VLAN555
+ip route 10.253.40.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 10.253.47.0 255.255.255.128 151.110.239.1 tag 1000
+ip route 10.253.112.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-USKIE-VLAN555
+ip route 10.253.122.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-CZPOH-VLAN555
+ip route 10.253.125.0 255.255.255.0 151.110.239.1 tag 1000 name DECOL-VPN4
+ip route 10.253.141.0 255.255.255.0 151.110.239.1 tag 1000 name GBBOU-NETMGMT-VPN4
+ip route 10.253.153.0 255.255.255.0 151.110.239.1 tag 1000 name VPN4-CZCES-VLAN555
+ip route 10.253.160.0 255.255.248.0 151.110.239.1 tag 1000 name VPN4-S-S-all-sites
+ip route 12.120.0.0 255.255.0.0 10.253.0.254 tag 1000
+ip route 12.194.0.0 255.255.0.0 10.253.0.254 tag 1000
+ip route 32.0.0.0 255.0.0.0 10.253.0.254 tag 1000
+ip route 32.33.6.52 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.34.11.136 255.255.255.252 151.110.239.1 tag 1000
+ip route 32.34.11.140 255.255.255.252 151.110.239.1 tag 1000
+ip route 32.34.65.108 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.34.65.109 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.34.70.118 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.34.70.119 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.34.72.81 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.34.80.66 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.37.145.40 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.37.145.114 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.37.150.125 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.37.157.61 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.37.177.127 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.37.180.78 255.255.255.255 151.110.239.1 tag 1000
+ip route 32.39.5.184 255.255.255.252 151.110.239.1 tag 1000
+ip route 32.39.57.136 255.255.255.252 151.110.239.1 tag 1000
+ip route 32.39.57.140 255.255.255.252 151.110.239.1 tag 1000
+ip route 46.137.171.68 255.255.255.255 151.110.239.1 tag 1000
+ip route 89.207.120.0 255.255.248.0 151.110.239.1 tag 1000 name Knapp_Tunnel
+ip route 128.178.24.69 255.255.255.255 151.110.239.1 tag 1000
+ip route 135.0.0.0 255.0.0.0 10.253.0.254 tag 1000
+ip route 135.32.238.179 255.255.255.255 151.110.239.1 tag 1000
+ip route 135.32.238.180 255.255.255.255 151.110.239.1 tag 1000
+ip route 148.179.254.48 255.255.255.240 151.110.239.1 tag 1000
+ip route 151.110.27.0 255.255.255.128 151.110.239.1 tag 1000
+ip route 151.110.27.128 255.255.255.128 151.110.239.1 tag 1000
+ip route 151.110.166.207 255.255.255.255 10.253.9.33
+ip route 151.110.248.16 255.255.255.240 151.110.248.5 tag 1000
+ip route 172.26.33.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.34.0 255.255.254.0 151.110.239.1 tag 1000
+ip route 172.26.36.0 255.255.254.0 151.110.239.1 tag 1000
+ip route 172.26.38.0 255.255.254.0 151.110.239.1 tag 1000
+ip route 172.26.40.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.41.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.42.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.43.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.44.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.45.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.46.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.47.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.48.0 255.255.254.0 151.110.239.1 tag 1000
+ip route 172.26.50.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.51.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.52.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.53.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.54.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.55.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.56.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.57.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.58.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.59.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.60.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.61.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.62.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.63.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.64.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.65.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.202.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.217.0 255.255.255.0 151.110.239.1 tag 1000
+ip route 172.26.224.0 255.255.248.0 151.110.239.1 tag 1000
+ip route 172.26.232.0 255.255.248.0 151.110.239.1 tag 1000
+ip route 172.27.0.0 255.255.0.0 151.110.239.1 tag 1000
+ip route 185.46.212.91 255.255.255.255 151.110.239.48 tag 1000 name Zscaler
+ip route 192.168.120.0 255.255.255.0 151.110.239.1 tag 1000 name Blue-Yonder
+ip route 192.168.244.73 255.255.255.255 151.110.239.1 tag 1000 name VPN4-CZBRN-ATTMgmt
+ip route 192.168.245.85 255.255.255.255 151.110.239.1 tag 1000 name VPN4-CZPOH-ATTMgmt
+ip route 192.168.245.89 255.255.255.255 151.110.239.1 tag 1000 name VPN4-CZPOH-ATTMgmt
+ip route 192.168.245.210 255.255.255.255 151.110.239.1 tag 1000 name VPN4-S-S-Champagne-ATT-mgmt
+ip route 192.168.245.218 255.255.255.255 151.110.239.1 tag 1000 name VPN4-S-S-Champagne-ATT-mgmt
+ip route 192.168.246.17 255.255.255.255 151.110.239.1 tag 1000 name VPN4-CZBRN-ATTMgmt
+ip route 192.168.246.85 255.255.255.255 151.110.239.1 tag 1000 name VPN4-CZPOH-ATTMgmt
+ip route 192.168.246.89 255.255.255.255 151.110.239.1 tag 1000 name VPN4-CZPOH-ATTMgmt
+ip route 192.168.248.153 255.255.255.255 151.110.239.1 tag 1000 name GBBOU-ATT-MGMT-VPN4
+ip route 193.28.102.224 255.255.255.224 151.110.239.1 tag 1000
+ip route 193.109.48.40 255.255.255.255 151.110.239.1 tag 1000
+ip route 193.109.48.72 255.255.255.255 151.110.239.1 tag 1000
+ip route 193.109.48.73 255.255.255.255 151.110.239.1 tag 1000
+ip route 199.255.205.100 255.255.255.255 151.110.239.48 tag 1000
+ip tacacs source-interface Vlan555 
+ip ssh source-interface Vlan555
+ip ssh version 2
+!
+ip bgp-community new-format
+ip community-list 198 permit 65520:200
+!
+ip access-list extended AutoQos-4.0-wlan-Acl-Bulk-Data
+ permit tcp any any eq 22
+ permit tcp any any eq 465
+ permit tcp any any eq 143
+ permit tcp any any eq 993
+ permit tcp any any eq 995
+ permit tcp any any eq 1914
+ permit tcp any any eq ftp
+ permit tcp any any eq ftp-data
+ permit tcp any any eq smtp
+ permit tcp any any eq pop3
+ip access-list extended AutoQos-4.0-wlan-Acl-MultiEnhanced-Conf
+ permit udp any any range 16384 32767
+ permit tcp any any range 50000 59999
+ip access-list extended AutoQos-4.0-wlan-Acl-Scavanger
+ permit tcp any any range 2300 2400
+ permit udp any any range 2300 2400
+ permit tcp any any range 6881 6999
+ permit tcp any any range 28800 29100
+ permit tcp any any eq 1214
+ permit udp any any eq 1214
+ permit tcp any any eq 3689
+ permit udp any any eq 3689
+ permit tcp any any eq 11999
+ip access-list extended AutoQos-4.0-wlan-Acl-Signaling
+ permit tcp any any range 2000 2002
+ permit tcp any any range 5060 5061
+ permit udp any any range 5060 5061
+ip access-list extended AutoQos-4.0-wlan-Acl-Transactional-Data
+ permit tcp any any eq 443
+ permit tcp any any eq 1521
+ permit udp any any eq 1521
+ permit tcp any any eq 1526
+ permit udp any any eq 1526
+ permit tcp any any eq 1575
+ permit udp any any eq 1575
+ permit tcp any any eq 1630
+ permit udp any any eq 1630
+ permit tcp any any eq 1527
+ permit tcp any any eq 6200
+ permit tcp any any eq 3389
+ permit tcp any any eq 5985
+ permit tcp any any eq 8080
+ip access-list extended CAPACL
+ permit icmp host 151.110.17.152 host 10.253.0.124
+ permit icmp host 10.253.0.124 host 151.110.17.152
+ permit icmp host 151.110.17.129 host 151.110.17.152
+ permit icmp host 151.110.17.152 host 151.110.17.129
+ permit ip any any
+!
+!
+ip prefix-list AMIDC_CONNECTED seq 11 permit 151.110.239.0/24
+ip prefix-list AMIDC_CONNECTED seq 12 permit 151.110.163.0/24
+ip prefix-list AMIDC_CONNECTED seq 13 permit 151.110.17.128/27
+ip prefix-list AMIDC_CONNECTED seq 14 permit 172.18.61.0/24
+ip prefix-list AMIDC_CONNECTED seq 15 permit 172.18.62.0/25
+ip prefix-list AMIDC_CONNECTED seq 16 permit 10.151.5.128/27
+ip prefix-list AMIDC_CONNECTED seq 17 permit 10.153.252.64/26
+ip prefix-list AMIDC_CONNECTED seq 18 permit 10.153.252.0/26
+ip prefix-list AMIDC_CONNECTED seq 19 permit 10.151.5.0/27
+ip prefix-list AMIDC_CONNECTED seq 20 permit 10.151.5.32/27
+ip prefix-list AMIDC_CONNECTED seq 21 permit 10.151.5.64/27
+ip prefix-list AMIDC_CONNECTED seq 22 permit 10.151.5.160/27
+ip prefix-list AMIDC_CONNECTED seq 23 permit 10.151.5.96/27
+ip prefix-list AMIDC_CONNECTED seq 24 permit 10.220.128.0/22
+ip prefix-list AMIDC_CONNECTED seq 25 permit 10.220.132.0/22
+ip prefix-list AMIDC_CONNECTED seq 26 permit 10.253.0.0/25
+ip prefix-list AMIDC_CONNECTED seq 27 permit 10.253.0.128/25
+ip prefix-list AMIDC_CONNECTED seq 28 permit 10.253.9.32/30
+ip prefix-list AMIDC_CONNECTED seq 29 permit 10.253.9.36/30
+ip prefix-list AMIDC_CONNECTED seq 30 permit 10.253.9.40/30
+ip prefix-list AMIDC_CONNECTED seq 31 permit 10.253.9.44/30
+ip prefix-list AMIDC_CONNECTED seq 32 permit 10.253.9.60/32
+ip prefix-list AMIDC_CONNECTED seq 33 permit 10.253.9.192/29
+ip prefix-list AMIDC_CONNECTED seq 34 permit 151.110.248.0/28
+ip prefix-list AMIDC_CONNECTED seq 35 permit 172.18.62.128/25
+ip prefix-list AMIDC_CONNECTED seq 36 permit 10.251.254.0/24
+ip prefix-list AMIDC_CONNECTED seq 40 permit 10.253.250.5/32
+ip prefix-list AMIDC_CONNECTED seq 50 permit 148.179.254.48/28
+!
+ip prefix-list AMIDC_TO_SDWAN seq 10 permit 10.253.250.5/32
+!
+ip prefix-list SDWAN_TO_AMIDC seq 10 permit 10.255.250.5/32
+!
+ip prefix-list TEST_VG seq 10 permit 10.127.138.25/32
+!
+ip prefix-list pfx-filter-ospf-in seq 5 permit 0.0.0.0/0 le 27
+logging source-interface Vlan555
+logging host 10.251.252.32
+logging host 10.251.254.20
+access-list 98 permit 151.110.140.93
+access-list 98 permit 151.110.7.209
+access-list 98 permit 151.110.126.180
+access-list 98 permit 151.110.126.219
+access-list 98 permit 151.110.151.51
+access-list 98 permit 172.20.92.96
+access-list 98 permit 172.20.92.97
+access-list 98 permit 172.20.92.98
+access-list 98 permit 172.20.92.99
+access-list 98 permit 151.110.200.161
+access-list 98 permit 151.110.200.160
+access-list 98 permit 151.110.200.151
+access-list 98 permit 151.110.140.210
+access-list 98 permit 151.110.200.150
+access-list 98 permit 151.110.200.153
+access-list 98 permit 151.110.200.152
+access-list 98 permit 151.110.200.155
+access-list 98 permit 151.110.200.154
+access-list 98 permit 151.110.200.157
+access-list 98 permit 151.110.200.156
+access-list 98 permit 151.110.200.159
+access-list 98 permit 151.110.200.158
+access-list 98 permit 151.110.140.207
+access-list 98 permit 151.110.140.206
+access-list 98 remark SNMP RO ACL
+access-list 98 permit 10.251.252.0 0.0.3.255
+access-list 98 permit 151.110.3.0 0.0.0.255
+access-list 98 permit 151.110.232.0 0.0.0.255
+access-list 98 permit 151.110.239.0 0.0.0.255
+access-list 98 permit 172.20.56.0 0.0.0.255
+access-list 99 remark SNMP RW
+access-list 99 permit 10.251.253.15
+access-list 99 permit 10.251.252.38
+access-list 99 permit 10.251.252.16 0.0.0.3
+access-list 99 permit 10.251.255.16 0.0.0.3
+access-list 99 permit 10.251.254.16 0.0.0.3
+!
+route-map CONNECTED_CORE_TO_FW permit 10 
+ match ip address prefix-list AMIDC_CONNECTED
+!
+route-map REDISTRIBUTE-STATIC-TO-OSPF10 permit 10 
+ match tag 1000
+!
+route-map rmap-filter-ospf-in permit 10 
+ match ip address prefix-list pfx-filter-ospf-in
+!
+route-map CORE_TO_SDWAN permit 10 
+ match ip address prefix-list AMIDC_CONNECTED
+ set community 444:444
+!
+route-map CORE_TO_SDWAN permit 12 
+ match ip address prefix-list TEST_VG
+ set community 444:444
+!
+route-map CORE_TO_SDWAN deny 20 
+!
+route-map SDWAN_TO_CORE permit 10 
+ match community 198
+!
+route-map SDWAN_TO_CORE deny 20 
+!
+!
+snmp-server group etn-snmp-ro v3 priv access 98
+snmp-server group etn-snmp-ro v3 priv context vlan- match prefix 
+snmp-server group etn-snmp-rw v3 priv write v1default access 99
+snmp-server group etn-snmp-rw v3 priv context vlan- match prefix 
+snmp-server trap-source Vlan555
+snmp-server source-interface informs Vlan555
+snmp-server location AMIDC
+snmp-server system-shutdown
+snmp-server enable traps snmp authentication linkdown linkup coldstart warmstart
+snmp-server enable traps flowmon
+snmp-server enable traps entity-perf throughput-notif
+snmp-server enable traps call-home message-send-fail server-fail
+snmp-server enable traps tty
+snmp-server enable traps ospf state-change
+snmp-server enable traps ospf errors
+snmp-server enable traps ospf retransmit
+snmp-server enable traps ospf lsa
+snmp-server enable traps ospf cisco-specific state-change nssa-trans-change
+snmp-server enable traps ospf cisco-specific state-change shamlink interface
+snmp-server enable traps ospf cisco-specific state-change shamlink neighbor
+snmp-server enable traps ospf cisco-specific errors
+snmp-server enable traps ospf cisco-specific retransmit
+snmp-server enable traps ospf cisco-specific lsa
+snmp-server enable traps eigrp
+snmp-server enable traps auth-framework sec-violation
+snmp-server enable traps rep
+snmp-server enable traps vtp
+snmp-server enable traps vlancreate
+snmp-server enable traps vlandelete
+snmp-server enable traps port-security
+snmp-server enable traps license
+snmp-server enable traps smart-license
+snmp-server enable traps cpu threshold
+snmp-server enable traps memory bufferpeak
+snmp-server enable traps stackwise
+snmp-server enable traps fru-ctrl
+snmp-server enable traps flash insertion removal lowspace
+snmp-server enable traps energywise
+snmp-server enable traps power-ethernet group 3 threshold 80
+snmp-server enable traps power-ethernet group 4 threshold 80
+snmp-server enable traps power-ethernet group 5 threshold 80
+snmp-server enable traps power-ethernet group 6 threshold 80
+snmp-server enable traps power-ethernet police
+snmp-server enable traps entity
+snmp-server enable traps envmon
+snmp-server enable traps cef resource-failure peer-state-change peer-fib-state-change inconsistency
+snmp-server enable traps lisp
+snmp-server enable traps isis
+snmp-server enable traps ipsla
+snmp-server enable traps entity-diag boot-up-fail hm-test-recover hm-thresh-reached scheduled-test-fail
+snmp-server enable traps bfd
+snmp-server enable traps ike policy add
+snmp-server enable traps ike policy delete
+snmp-server enable traps ike tunnel start
+snmp-server enable traps ike tunnel stop
+snmp-server enable traps ipsec cryptomap add
+snmp-server enable traps ipsec cryptomap delete
+snmp-server enable traps ipsec cryptomap attach
+snmp-server enable traps ipsec cryptomap detach
+snmp-server enable traps ipsec tunnel start
+snmp-server enable traps ipsec tunnel stop
+snmp-server enable traps ipsec too-many-sas
+snmp-server enable traps config-copy
+snmp-server enable traps config
+snmp-server enable traps config-ctid
+snmp-server enable traps dhcp
+snmp-server enable traps event-manager
+snmp-server enable traps hsrp
+snmp-server enable traps ipmulticast
+snmp-server enable traps msdp
+snmp-server enable traps ospfv3 state-change
+snmp-server enable traps ospfv3 errors
+snmp-server enable traps pim neighbor-change rp-mapping-change invalid-pim-message
+snmp-server enable traps bridge newroot topologychange
+snmp-server enable traps stpx inconsistency root-inconsistency loop-inconsistency
+snmp-server enable traps syslog
+snmp-server enable traps bgp
+snmp-server enable traps bgp cbgp2
+snmp-server enable traps nhrp nhs
+snmp-server enable traps nhrp nhc
+snmp-server enable traps nhrp nhp
+snmp-server enable traps nhrp quota-exceeded
+snmp-server enable traps mpls rfc ldp
+snmp-server enable traps mpls ldp
+snmp-server enable traps mpls rfc traffic-eng
+snmp-server enable traps mpls traffic-eng
+snmp-server enable traps mpls fast-reroute protected
+snmp-server enable traps local-auth
+snmp-server enable traps vlan-membership
+snmp-server enable traps errdisable
+snmp-server enable traps rf
+snmp-server enable traps transceiver all
+snmp-server enable traps bulkstat collection transfer
+snmp-server enable traps mac-notification change move threshold
+snmp-server enable traps vrfmib vrf-up vrf-down vnet-trunk-up vnet-trunk-down
+snmp-server enable traps mpls vpn
+snmp-server enable traps mpls rfc vpn
+snmp-server host 10.251.254.20 version 3 priv etn-snmp-rw 
+snmp-server host 151.110.207.100 version 2c sugra 
+tacacs-server timeout 60
+tacacs server 10.251.252.33
+ address ipv4 10.251.252.33
+ key 7 130B1601080D167372
+tacacs server 10.251.253.33
+ address ipv4 10.251.253.33
+ key 7 130B1601080D167372
+!
+!
+!
+control-plane
+ service-policy input system-cpp-policy
+!
+banner login ^CC
+*******************************************************************************
+* WARNING:  THIS IS A PRIVATE COMPUTER SYSTEM                                 *
+* Unauthorized use of this system is prohibited and will be prosecuted.       *
+* Access to this system and any activities perform on/by/with this system     *
+* will be monitored for all lawful purposes, including to ensure that use is  *
+* authorized,  for management of the system, and to facilitate protection     *
+* against unauthorized access.  During monitoring, information may be         *
+* examined, recorded, copied and used for authorized purposes.  All           *
+* information including personal information placed on or sent over this      *
+* system may be monitored. Use of this system, authorized or unauthorized,    *
+* constitutes consent to monitoring. Unauthorized use may subject you to      *
+* criminal prosecution. If you have not been granted explicit authorization   *
+* to use this system or do not consent to monitoring, DISCONNECT NOW.         *
+*******************************************************************************
+^C
+!
+line con 0
+ transport output none
+ stopbits 1
+line aux 0
+ transport output none
+ stopbits 1
+line vty 0 4
+ transport input ssh
+ transport output none
+line vty 5 15
+ transport input ssh
+!
+exception crashinfo maximum files 2
+!
+monitor session 1 source vlan 3 - 4 , 10 , 575
+monitor session 1 destination interface Te1/0/22
+monitor session 2 source interface Te1/0/8
+monitor session 2 source interface Te2/0/8
+monitor session 2 destination interface Te2/0/22
+monitor session 3 source vlan 3 - 4 , 7 , 10
+monitor session 3 destination interface Po54
+ntp server 151.110.126.110
+ntp server 151.110.126.15 prefer
