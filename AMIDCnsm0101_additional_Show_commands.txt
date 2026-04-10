@@ -1,0 +1,444 @@
+AMIDCnsm0101#   show vlan brief 
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Gi3/0/1, Gi3/0/2, Gi3/0/9, Gi3/0/10, Gi3/0/11, Gi3/0/12, Gi3/0/15, Gi3/0/16, Gi3/0/24, Gi3/0/26, Gi3/0/34, Gi3/0/35, Gi3/0/47, Gi3/0/48, Gi4/0/1, Gi4/0/2, Gi4/0/4, Gi4/0/9, Gi4/0/10
+                                                Gi4/0/11, Gi4/0/12, Gi4/0/15, Gi4/0/23, Gi4/0/26, Gi4/0/41, Gi4/0/42, Gi5/0/3, Gi5/0/4, Gi5/0/5, Gi5/0/6, Gi5/0/7, Gi5/0/8, Gi5/0/9, Gi5/0/10, Gi5/0/14, Gi5/0/16, Gi5/0/17, Gi5/0/23
+                                                Gi5/0/26, Gi5/0/28, Gi5/0/29, Gi5/0/30, Gi5/0/41, Gi5/0/42, Gi5/0/43, Gi5/0/48, Gi6/0/1, Gi6/0/3, Gi6/0/4, Gi6/0/5, Gi6/0/6, Gi6/0/7, Gi6/0/8, Gi6/0/9, Gi6/0/10, Gi6/0/15, Gi6/0/16
+                                                Gi6/0/18, Gi6/0/23, Gi6/0/24, Gi6/0/26, Gi6/0/28, Gi6/0/29, Gi6/0/30, Gi6/0/33, Gi6/0/34, Gi6/0/36, Gi6/0/45, Gi6/0/46
+2    DO-NOT-USE                       act/lshut 
+3    INTERNET                         active    Te1/0/13, Te2/0/13, Gi3/0/4, Gi3/0/27, Gi3/0/32, Gi4/0/24
+4    DMZ                              active    Gi3/0/38, Gi4/0/32, Gi4/0/33, Gi4/0/34
+6    LB-INTERNAL                      active    
+7    VLAN0007                         active    Gi3/0/28
+8    VLAN0008                         active    Gi3/0/3, Gi3/0/45, Gi4/0/45, Po73, Po75
+10   151.110.239.0-AMSDC              active    Gi3/0/21, Gi3/0/23, Gi3/0/25, Gi3/0/29, Gi3/0/30, Gi3/0/43, Gi4/0/3, Gi4/0/21, Gi4/0/27, Gi4/0/35, Gi4/0/38, Gi4/0/39, Gi4/0/40, Gi4/0/43, Gi4/0/47, Gi4/0/48, Gi5/0/2, Gi5/0/45, Gi5/0/46
+                                                Gi6/0/2, Gi6/0/37
+11   VLAN0011                         active    
+12   151.110.248.0-ProxyTransitNet    active    
+13   151.110.248.16-ProxyNet          active    Gi3/0/33, Gi4/0/25
+20   VLAN0020                         active    
+26   VLAN0026                         active    
+30   VLAN0030                         active    
+61   172.18.61.0-DC-Util-Storage-Net1 active    
+62   172.18.62.0-DC-ClusterHB-Net1    active    
+63   172.18.62.128-DC-iLO-Net1        active    Gi4/0/44, Gi5/0/44, Gi6/0/44
+80   ADX_DMZ_SYNC                     active    Gi4/0/37
+81   ADX_INT_SYNC                     active    Gi3/0/41, Gi3/0/42, Gi4/0/36
+99   BLACKHOLE_SHUTDOWN_VLAN          sus/lshut 
+163  DATACENTER_PRODUCTION            active    Gi6/0/47
+169  FW_SYNC                          active    Gi3/0/18, Gi4/0/18, Gi4/0/29, Gi6/0/25
+192  DATACENTER_VMOTION               active    
+207  FW_IVE_DUMMY                     active    Gi3/0/37, Gi3/0/39, Gi3/0/40, Gi4/0/31, Gi5/0/15
+500  VLAN0500                         active    
+501  VLAN0501                         active    
+550  10.253.9.32-ATT-EVPN-PTP         active    
+551  10.253.9.36-ATT-EVPN-PTP         active    
+552  10.253.9.40-ATT-EVPN-PTP         active    
+553  10.253.9.44-ATT-EVPN-PTP         active    
+554  32.37.38.176-ATT-BGP-PEERING-NET active    Gi3/0/44, Po74, Po76
+555  10.253.0.0-NETMGMT-AMSDC         active    Gi3/0/46, Gi4/0/46, Gi5/0/47, Gi6/0/12, Gi6/0/14, Gi6/0/48
+556  10.253.0.128-WIRELESS-MGMT       active    
+560  VPN-HORATIO-transit              active    Gi4/0/16
+561  VOICE-CUBE-SBC-transit           active    Gi3/0/13, Gi3/0/14
+562  VPN-MSD-transit                  active    
+570  10.127.138.16/28-Teams-Voice     active    
+571  10.127.139.16/28-Teams-Voice-2   active    
+572  10.127.138.48-Cryptshare         active    
+574  10.251.254.0/24-Net-Tools        active    Te1/0/18, Te1/0/20, Te1/0/23, Te2/0/18, Te2/0/20, Te2/0/23
+575  151.110.17.x-DNS-DHCP-NTP        active    Gi3/0/31, Gi3/0/36, Gi4/0/28, Gi4/0/30, Gi5/0/27, Gi6/0/27
+590  WLC-HeartBeat                    active    
+591  CatalystCenter-HeartBeat         active    Te1/0/19, Te1/0/21, Te1/0/24, Te2/0/19, Te2/0/21, Te2/0/24
+620  SDW1_Transport_VPN1              active    
+621  SDW1_Transport_VPN4              active    
+622  SDW1_Service_VPN1                active    
+623  SDW1_Service_VPN4                active    
+624  SDW1_B2B_MPLS                    active    
+630  SDW2_Transport_VPN1              active    
+631  SDW2_Transport_VPN4              active    
+632  SDW2_Service_VPN1                active    
+633  SDW2_Service_VPN4                active    
+634  SDW2_B2B_MPLS                    active    
+666  VLAN0666                         active    
+805  VLAN0805                         active    
+950  10.151.5.128-AvayaGeneral        active    Gi5/0/31, Gi5/0/34, Gi5/0/35, Gi5/0/36, Gi5/0/37, Gi5/0/38, Gi6/0/35, Gi6/0/38, Gi6/0/39, Gi6/0/40, Gi6/0/41
+953  10.153.252.64-VMotion&HB         active    Gi5/0/12, Gi5/0/24, Gi5/0/25
+954  10.153.252.0-CiscoVM             active    Gi4/0/13, Gi4/0/14, Gi5/0/1
+955  AVAYA_PRIVATE                    active    
+956  AVAYA_SERVER_CONTROL_C           active    Gi5/0/32, Gi5/0/33, Gi6/0/31, Gi6/0/32
+957  10.151.5.32-Avaya-Control-B      active    Gi6/0/43
+958  10.151.5.64-Avaya-Control-A      active    Gi5/0/40
+959  10.151.5.160-Avaya-Applications  active    Gi5/0/39, Gi6/0/42
+969  10.151.5.96-Avaya-Messaging      active    
+1002 fddi-default                     act/unsup 
+1003 token-ring-default               act/unsup 
+1004 fddinet-default                  act/unsup 
+          
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1005 trnet-default                    act/unsup 
+1502 10-220.128.0-VCE-OOB-MGMT        active    
+1503 10-220.132.0-VCE-ESXI-MGMT       active    
+1504 10.220.136.0-VCE-ESXI-VMOTION    active    
+AMIDCnsm0101#
+AMIDCnsm0101#
+AMIDCnsm0101#
+AMIDCnsm0101#show int
+AMIDCnsm0101#show interfaces des
+AMIDCnsm0101#show interfaces description 
+Interface                      Status         Protocol Description
+Vl1                            admin down     down     
+Vl10                           up             up       DATACENTER_INTERNAL_NETWORK 
+Vl12                           up             up       IPS_TRANSIT_VLAN 
+Vl61                           up             up       DATACENTER_UTILITY_STORAGE_NETWORK 
+Vl62                           up             up       DATACENTER_CLUSTER_HEARTBEATS_NETWORK 
+Vl63                           up             up       DATACENTER_ILO_OOB_NETWORK 
+Vl163                          up             up       DATACENTER_PRODUCTION_NETWORK 
+Vl550                          up             up       10.253.9.32-ATT-EVPN-PTP
+Vl551                          up             up       10.253.9.36-ATT-EVPN-PTP
+Vl552                          up             up       10.253.9.40-ATT-EVPN-PTP
+Vl553                          up             up       10.253.9.44-ATT-EVPN-PTP
+Vl555                          up             up       10-253.0.0-MGMT 
+Vl556                          up             up       10-253.0.128-WIRELESS MGMT 
+Vl561                          up             up       10.253.9.192/29-VOICE-CUBE-SBC-transit
+Vl574                          up             up       Net-Tools
+Vl575                          up             up       151.110.17.128-InfrSvcs
+Vl622                          up             up       
+Vl632                          up             up       
+Vl950                          up             up       AVAYA_GENERAL 
+Vl953                          up             up       AMIDC_CIMC_HEARTBEAT 
+Vl954                          up             up       AMIDC_UC_VOICE 
+Vl956                          up             up       AVAYA_SERVER_CONTROL_C 
+Vl957                          up             up       AVAYA_CONTROL_B 
+Vl958                          up             up       AVAYA_CONTROL_A 
+Vl959                          up             up       AVAYA_APPLICATIONS 
+Vl969                          up             up       AVAYA_MESSAGING 
+Vl1502                         up             up       10-220.128.0-VCE-OOB-MGMT 
+Vl1503                         up             up       10-220.132.0-VCE-ESXI-MGMT 
+Gi0/0                          down           down     
+Te1/0/1                        up             up       emeabigiph1_2.1
+Te1/0/2                        up             up       emeabigiph2_2.1
+Te1/0/3                        up             up       NET:VXRAIL TOR amidcnsm0104 ETH1/49/1
+Te1/0/4                        up             up       NET:VXRAIL TOR amidcnsm0105 ETH1/49/1
+Te1/0/5                        up             up       WLC:AMIDCnwm0101(b)
+Te1/0/6                        up             up       WLC:AMIDCnwm0101(a)
+Te1/0/7                        up             up       SDWAN RESERVED
+Te1/0/8                        up             up       EMEAFW1-eth1
+Te1/0/9                        up             up       EMEAFW2-eth1
+Te1/0/10                       up             up       NET:NLEACOAMS0011H Te0/3/0 Primary
+Te1/0/11                       up             up       NET:Amidcnrm0101 Te0/0/2 Primary
+Te1/0/12                       up             up       NET:Amidcnrm0101 Te0/0/3 Primary
+Te1/0/13                       up             up       RTR:ATT INTERNET ADIG NLEACEAMS0001R Te0/3/0 Primary 
+Te1/0/14                       up             up       Extra Hop Reserved
+Te1/0/15                       up             up       NET:Amidcnrm0102 Te0/0/4 Primary
+Te1/0/16                       up             up       NET:Amidcnrm0101 Te0/0/5 B2B MPLS
+Te1/0/17                       up             up       SDWAN RESERVED
+Te1/0/18                       up             up       amidcnmdna01 - S1P1 (Enterprise)
+Te1/0/19                       up             up       amidcnmdna01 - S1P2 (Intracluster)
+Te1/0/20                       up             up       amidcnmdna02 - S1P1 (Enterprise)
+Te1/0/21                       up             up       amidcnmdna02 - S1P2 (Intracluster)
+Te1/0/22                       up             down     NET:GIGAMON SPAN X1
+Te1/0/23                       up             up       amidcnmdna03 - S1P1 (Enterprise)
+Te1/0/24                       up             up       amidcnmdna03 - S1P2 (Intracluster)
+Te1/1/1                        down           down     
+Te1/1/2                        down           down     
+Te1/1/3                        down           down     
+Te1/1/4                        down           down     
+Te1/1/5                        down           down     
+Te1/1/6                        down           down     
+Te1/1/7                        down           down     
+Te1/1/8                        down           down     
+Fo1/1/1                        down           down     
+Fo1/1/2                        down           down     
+Te2/0/1                        up             up       emeabigiph1
+Te2/0/2                        up             up       emeabigiph1_2.2
+Te2/0/3                        up             up       NET:VXRAIL TOR amidcnsm0104 ETH1/50/1
+Te2/0/4                        up             up       NET:VXRAIL TOR amidcnsm0105 ETH1/50/1
+Te2/0/5                        up             up       WLC:AMIDCnwm0101(b)
+Te2/0/6                        up             up       WLC:AMIDCnwm0101(a)
+Te2/0/7                        up             up       SDWAN RESERVED
+Te2/0/8                        up             up       EMEAFW1-eth2
+Te2/0/9                        up             up       EMEAFW2-eth2
+Te2/0/10                       up             up       NET:NLEACOAMS0012H Te0/3/0 Primary
+Te2/0/11                       up             up       NET:Amidcnrm0102 Te0/0/2 Primary
+Te2/0/12                       up             up       NET:Amidcnrm0102 Te0/0/3 Primary
+Te2/0/13                       up             up       RTR:ATT INTERNET ADIG NLEACEAMS0002R Te0/3/0 Secondary 
+Te2/0/14                       up             up       Extra Hop Reserved
+Te2/0/15                       up             up       NET:Amidcnrm0101 Te0/0/4 Primary
+Te2/0/16                       up             up       NET:Amidcnrm0102 Te0/0/5 SDWAN2 MPLS B2B
+Te2/0/17                       up             up       SDWAN RESERVED
+Te2/0/18                       up             up       amidcnmdna01 - S3P2 (Enterprise)
+Te2/0/19                       up             up       amidcnmdna01 - S3P1 (Intracluster)
+Te2/0/20                       up             up       amidcnmdna02 - S3P2 (Enterprise)
+Te2/0/21                       up             up       amidcnmdna02 - S3P1 (Intracluster)
+Te2/0/22                       up             down     NET:GIGAMON SPAN X2
+Te2/0/23                       up             up       amidcnmdna03 - S3P2 (Enterprise)
+Te2/0/24                       up             up       amidcnmdna03 - S3P1 (Intracluster)
+Te2/1/1                        down           down     
+Te2/1/2                        down           down     
+Te2/1/3                        down           down     
+Te2/1/4                        down           down     
+Te2/1/5                        down           down     
+Te2/1/6                        down           down     
+Te2/1/7                        down           down     
+Te2/1/8                        down           down     
+Fo2/1/1                        down           down     
+Fo2/1/2                        down           down     
+Gi3/0/1                        admin down     down     UNUSED
+Gi3/0/2                        admin down     down     UNUSED
+Gi3/0/3                        up             up       WAN:IOSETC0001 AVTS IN Gi0/1
+Gi3/0/4                        up             up       WAN:IOSETC0001 AVTS OUT
+Gi3/0/5                        up             up       WLC AMIDC-WLC.1 10.253.0.120 PO1
+Gi3/0/6                        up             up       WLC AMIDC-WLC.2 10.253.0.121 PO2
+Gi3/0/7                        up             up       WLC AMIDC-WLC.3 10.253.0.133 PO3
+Gi3/0/8                        up             up       WLC AMIDC-WLC.4 10.253.0.134 PO4
+Gi3/0/9                        admin down     down     UNUSED
+Gi3/0/10                       admin down     down     UNUSED
+Gi3/0/11                       admin down     down     UNUSED
+Gi3/0/12                       admin down     down     UNUSED
+Gi3/0/13                       up             up       VOICE-CUBE-SBC-transit-AMIDCCUBE4461A
+Gi3/0/14                       up             up       VOICE-CUBE-SBC-transit-AMIDCCUBE4461B
+Gi3/0/15                       admin down     down     UNUSED
+Gi3/0/16                       admin down     down     UNUSED
+Gi3/0/17                       up             up       emeaavtsfw2-E1
+Gi3/0/18                       admin down     down     UNUSED
+Gi3/0/19                       up             up       emeaavtsfw2-E5
+Gi3/0/20                       up             up       emeaavtsfw2-E4
+Gi3/0/21                       up             up       emeaavtsfw2-E3
+Gi3/0/22                       up             up       emeaavtsfw2-E2
+Gi3/0/23                       admin down     down     UNUSED
+Gi3/0/24                       admin down     down     UNUSED
+Gi3/0/25                       up             up       GIGAMON GIGAVUE-420 MGMT 151.110.239.249
+Gi3/0/26                       admin down     down     UNUSED
+Gi3/0/27                       admin down     down     UNUSED
+Gi3/0/28                       admin down     down     UNUSED
+Gi3/0/29                       admin down     down     UNUSED
+Gi3/0/30                       up             up       FW SWITCH-emea1 
+Gi3/0/31                       up             up       EMEAFW2-mgmt0
+Gi3/0/32                       admin down     down     UNUSED
+Gi3/0/33                       admin down     down     UNUSED
+Gi3/0/34                       admin down     down     UNUSED
+Gi3/0/35                       admin down     down     UNUSED
+Gi3/0/36                       up             up       emeaavtsfw1-MGMT     
+Gi3/0/37                       admin down     down     UNUSED
+Gi3/0/38                       admin down     down     UNUSED
+Gi3/0/39                       admin down     down     UNUSED
+Gi3/0/40                       admin down     down     UNUSED
+Gi3/0/41                       admin down     down     UNUSED
+Gi3/0/42                       admin down     down     UNUSED
+Gi3/0/43                       admin down     down     UNUSED
+Gi3/0/44                       admin down     down     UNUSED
+Gi3/0/45                       admin down     down     UNUSED
+Gi3/0/46                       up             up       WLC:AMIDCnwm0101(b) CIMC 
+Gi3/0/47                       admin down     down     UNUSED
+Gi3/0/48                       admin down     down     UNUSED
+Gi3/1/1                        down           down     
+Gi3/1/2                        down           down     
+Gi3/1/3                        down           down     
+Gi3/1/4                        down           down     
+Te3/1/1                        down           down     
+Te3/1/2                        down           down     
+Te3/1/3                        down           down     
+Te3/1/4                        down           down     
+Gi4/0/1                        admin down     down     UNUSED
+Gi4/0/2                        admin down     down     UNUSED
+Gi4/0/3                        admin down     down     UNUSED
+Gi4/0/4                        admin down     down     UNUSED
+Gi4/0/5                        up             up       WLC AMIDC-WLC.1 10.253.0.120 PO1 
+Gi4/0/6                        up             up       WLC AMIDC-WLC.2 10.253.0.121 PO2 
+Gi4/0/7                        up             up       WLC AMIDC-WLC.3 10.253.0.133 PO3 
+Gi4/0/8                        up             up       WLC AMIDC-WLC.4 10.253.0.134 PO4 
+Gi4/0/9                        admin down     down     UNUSED
+Gi4/0/10                       admin down     down     UNUSED
+Gi4/0/11                       admin down     down     UNUSED
+Gi4/0/12                       admin down     down     UNUSED
+Gi4/0/13                       up             up       AMIDCCUBE4461A-VOICE-CUBE-Gi0/1
+Gi4/0/14                       up             up       AMIDCCUBE4461B-VOICE-CUBE-Gi0/1
+Gi4/0/15                       admin down     down     UNUSED
+Gi4/0/16                       admin down     down     UNUSED
+Gi4/0/17                       up             up       emeaavtsfw1-E1
+Gi4/0/18                       admin down     down     UNUSED
+Gi4/0/19                       up             up       emeaavtsfw1-E5
+Gi4/0/20                       up             up       emeaavtsfw1-E4
+Gi4/0/21                       up             up       emeaavtsfw1-E3
+Gi4/0/22                       up             up       emeaavtsfw1-E2
+Gi4/0/23                       admin down     down     UNUSED
+Gi4/0/24                       admin down     down     UNUSED
+Gi4/0/25                       admin down     down     UNUSED
+Gi4/0/26                       admin down     down     UNUSED
+Gi4/0/27                       admin down     down     UNUSED
+Gi4/0/28                       up             up       emeaavtsfw2-MGMT
+Gi4/0/29                       up             up       EMEAFW1-SYNC
+Gi4/0/30                       up             up       EMEAFW2-LOM
+Gi4/0/31                       admin down     down     UNUSED
+Gi4/0/32                       admin down     down     UNUSED
+Gi4/0/33                       admin down     down     UNUSED
+Gi4/0/34                       admin down     down     UNUSED
+Gi4/0/35                       admin down     down     UNUSED
+Gi4/0/36                       admin down     down     UNUSED
+Gi4/0/37                       admin down     down     UNUSED
+Gi4/0/38                       admin down     down     UNUSED
+Gi4/0/39                       admin down     down     UNUSED
+Gi4/0/40                       admin down     down     UNUSED
+Gi4/0/41                       admin down     down     UNUSED
+Gi4/0/42                       admin down     down     UNUSED
+Gi4/0/43                       admin down     down     UNUSED
+Gi4/0/44                       up             up       amidcnmdna01 - MGMT
+Gi4/0/45                       admin down     down     UNUSED
+Gi4/0/46                       up             up       WLC:AMIDCnwm0101(a) CIMC 
+Gi4/0/47                       admin down     down     UNUSED
+Gi4/0/48                       admin down     down     UNUSED
+Gi4/1/1                        down           down     
+Gi4/1/2                        down           down     
+Gi4/1/3                        down           down     
+Gi4/1/4                        down           down     
+Te4/1/1                        down           down     
+Te4/1/2                        down           down     
+Te4/1/3                        down           down     
+Te4/1/4                        down           down     
+Gi5/0/1                        up             up       RTR:AMIDC3945GW-01-G0/0 VOICE GATEWAY 
+Gi5/0/2                        up             up       AMIDCExtraHop01-iDRAC
+Gi5/0/3                        admin down     down     SDWAN management
+Gi5/0/4                        admin down     down     UNUSED
+Gi5/0/5                        admin down     down     UNUSED
+Gi5/0/6                        admin down     down     UNUSED
+Gi5/0/7                        admin down     down     UNUSED
+Gi5/0/8                        admin down     down     UNUSED
+Gi5/0/9                        admin down     down     UNUSED
+Gi5/0/10                       admin down     down     UNUSED
+Gi5/0/11                       up             up       emeabigiph1 port 1.1
+Gi5/0/12                       admin down     down     UNUSED
+Gi5/0/13                       up             up       emeabigiph2 port 1.1
+Gi5/0/14                       admin down     down     UNUSED
+Gi5/0/15                       admin down     down     UNUSED
+Gi5/0/16                       admin down     down     UNUSED
+Gi5/0/17                       admin down     down     UNUSED
+Gi5/0/18                       up             up       emeabigiph1 port 1.3
+Gi5/0/19                       up             up       emeabigiph2 port 1.3
+Gi5/0/20                       up             up       NET:NLEACOAMS0011H G0/0/0 Secondary
+Gi5/0/21                       up             up       NET:NLEACOAMS0011H G0/0/1 Secondary
+Gi5/0/22                       up             up       NET:NLEACOAMS0011H G0/0/2 Secondary
+Gi5/0/23                       admin down     down     UNUSED
+Gi5/0/24                       admin down     down     UNUSED
+Gi5/0/25                       admin down     down     UNUSED
+Gi5/0/26                       admin down     down     UNUSED
+Gi5/0/27                       up             up       EMEAFW1-mgmt0
+Gi5/0/28                       admin down     down     UNUSED
+Gi5/0/29                       admin down     down     UNUSED
+Gi5/0/30                       admin down     down     UNUSED
+Gi5/0/31                       admin down     down     UNUSED
+Gi5/0/32                       admin down     down     UNUSED
+Gi5/0/33                       admin down     down     UNUSED
+Gi5/0/34                       admin down     down     UNUSED
+Gi5/0/35                       admin down     down     UNUSED
+Gi5/0/36                       admin down     down     UNUSED
+Gi5/0/37                       admin down     down     UNUSED
+Gi5/0/38                       admin down     down     UNUSED
+Gi5/0/39                       admin down     down     UNUSED
+Gi5/0/40                       admin down     down     UNUSED
+Gi5/0/41                       admin down     down     UNUSED
+Gi5/0/42                       admin down     down     UNUSED
+Gi5/0/43                       admin down     down     UNUSED
+Gi5/0/44                       up             up       amidcnmdna02 - MGMT
+Gi5/0/45                       up             up       NETSCOUT-NEW-IPMI
+Gi5/0/46                       up             up       NETSCOUT-NEW-E0
+Gi5/0/47                       up             up       TERMINAL SERVER AMIDCncm0101 SECONDARY 
+Gi5/0/48                       admin down     down     UNUSED
+Gi5/1/1                        down           down     
+Gi5/1/2                        down           down     
+Gi5/1/3                        down           down     
+Gi5/1/4                        down           down     
+Te5/1/1                        down           down     
+Te5/1/2                        down           down     
+Te5/1/3                        down           down     
+Te5/1/4                        down           down     
+Gi6/0/1                        admin down     down     UNUSED
+Gi6/0/2                        up             up       AMIDCExtraHop01-Eth1(MGMT)
+Gi6/0/3                        admin down     down     SDWAN management
+Gi6/0/4                        admin down     down     UNUSED
+Gi6/0/5                        admin down     down     UNUSED
+Gi6/0/6                        admin down     down     UNUSED
+Gi6/0/7                        admin down     down     UNUSED
+Gi6/0/8                        admin down     down     UNUSED
+Gi6/0/9                        admin down     down     UNUSED
+Gi6/0/10                       admin down     down     UNUSED
+Gi6/0/11                       up             up       emeabigiph1 port 1.2
+Gi6/0/12                       up             up       emeabigiph1 port mgmt
+Gi6/0/13                       up             up       emeabigiph2 port 1.2
+Gi6/0/14                       up             up       emeabigiph2 port mgmt
+Gi6/0/15                       admin down     down     UNUSED
+Gi6/0/16                       admin down     down     UNUSED
+Gi6/0/17                       up             up       emeabigiph1 port 1.4
+Gi6/0/18                       admin down     down     UNUSED
+Gi6/0/19                       up             up       emeabigiph2 port 1.4
+Gi6/0/20                       up             up       NET:NLEACOAMS0012H G0/0/0 Secondary
+Gi6/0/21                       up             up       NET:NLEACOAMS0012H G0/0/1 Secondary
+Gi6/0/22                       up             up       NET:NLEACOAMS0012H G0/0/2 Secondary
+Gi6/0/23                       admin down     down     UNUSED
+Gi6/0/24                       admin down     down     UNUSED
+Gi6/0/25                       up             up       EMEAFW2-SYNC
+Gi6/0/26                       admin down     down     UNUSED
+Gi6/0/27                       up             up       EMEAFW1-LOM
+Gi6/0/28                       admin down     down     UNUSED
+Gi6/0/29                       admin down     down     UNUSED
+Gi6/0/30                       admin down     down     UNUSED
+Gi6/0/31                       admin down     down     UNUSED
+Gi6/0/32                       admin down     down     UNUSED
+Gi6/0/33                       admin down     down     UNUSED
+Gi6/0/34                       admin down     down     UNUSED
+Gi6/0/35                       admin down     down     UNUSED
+Gi6/0/36                       admin down     down     UNUSED
+Gi6/0/37                       admin down     down     UNUSED
+Gi6/0/38                       admin down     down     UNUSED
+Gi6/0/39                       admin down     down     UNUSED
+Gi6/0/40                       admin down     down     UNUSED
+Gi6/0/41                       admin down     down     UNUSED
+Gi6/0/42                       admin down     down     UNUSED
+Gi6/0/43                       admin down     down     UNUSED
+Gi6/0/44                       up             up       amidcnmdna03 - MGMT
+Gi6/0/45                       admin down     down     UNUSED
+Gi6/0/46                       admin down     down     UNUSED
+Gi6/0/47                       admin down     down     UNUSED
+Gi6/0/48                       down           down     TERMINAL SERVER AMIDCncm0101 PRIMARY 10.253.0.2 
+Gi6/1/1                        down           down     
+Gi6/1/2                        down           down     
+Gi6/1/3                        down           down     
+Gi6/1/4                        down           down     
+Te6/1/1                        down           down     
+Te6/1/2                        down           down     
+Te6/1/3                        down           down     
+Te6/1/4                        down           down     
+Po1                            up             up       WLC AMIDC-WLC.1 10.253.0.120 PORT-CHANNEL 
+Po2                            up             up       WLC AMIDC-WLC.2 10.253.0.121 PORT-CHANNEL 
+Po3                            up             up       WLC AMIDC-WLC.3 10.253.0.133 PORT-CHANNEL 
+Po4                            up             up       WLC AMIDC-WLC.4 10.253.0.134 PORT-CHANNEL 
+Po5                            admin down     down     UNUSED
+Po6                            admin down     down     UNUSED
+Po7                            admin down     down     UNUSED
+Po8                            admin down     down     UNUSED
+Po9                            up             up       emeabigiph1
+Po10                           up             up       emeabigiph2
+Po11                           up             up       EMEABigIPh1 PORT-CHANNEL 
+Po12                           up             up       EMEABigIPh2 PORT-CHANNEL 
+Po13                           up             up       EMEABigIPh1 PORT-CHANNEL
+Po14                           up             up       EMEABigIPh2 PORT-CHANNEL
+Po15                           up             up       NET:NLEACOAMS0011H G0/0/0-0/0/2 Secondary
+Po16                           up             up       NET:NLEACOAMS0012H G0/0/0-0/0/2 Secondary
+Po31                           admin down     down     UNUSED
+Po32                           up             up       VXRAIL 4 NODE UC TOR amidcnsm0104 AND amidcnsm0105 PORT-CHANNEL 
+Po35                           up             up       WLC:AMIDCnwm0101(b)
+Po36                           up             up       WLC:AMIDCnwm0101(a)
+Po40                           admin down     down     UNUSED
+Po41                           admin down     down     UNUSED
+Po50                           up             up       NET:Amidcnrm0101 TE0/0/3-Te0/0/4
+Po51                           up             up       NET:Amidcnrm0102 TE0/0/3-Te0/0/4
+Po52                           up             up       NET:Amidcnrm0101 Te0/0/5 B2B MPLS
+Po53                           up             up       NET:Amidcnrm0102 Te0/0/5 SDWAN2 MPLS B2B
+Po54                           up             down     EXTRAHOP
+Po71                           up             up       EMEAFW1
+Po72                           up             up       EMEAFW2
+Po73                           up             up       emeaavtsfw2-v8
+Po74                           up             up       emeaavtsfw2-v554
+Po75                           up             up       emeaavtsfw1-v8
+Po76                           up             up       emeaavtsfw1-v554
+Lo0                            up             up       NET:10.253.9.60-OSPF Router-ID
