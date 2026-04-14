@@ -1,0 +1,825 @@
+
+*******************************************************************************
+* WARNING:  THIS IS A PRIVATE COMPUTER SYSTEM                                 *
+* Unauthorized use of this system is prohibited and will be prosecuted.       *
+* Access to this system and any activities perform on/by/with this system     *
+* will be monitored for all lawful purposes, including to ensure that use is  *
+* authorized,  for management of the system, and to facilitate protection     *
+* against unauthorized access.  During monitoring, information may be         *
+* examined, recorded, copied and used for authorized purposes.  All           *
+* information including personal information placed on or sent over this      *
+* system may be monitored. Use of this system, authorized or unauthorized,    *
+* constitutes consent to monitoring. Unauthorized use may subject you to      *
+* criminal prosecution. If you have not been granted explicit authorization   *
+* to use this system or do not consent to monitoring, DISCONNECT NOW.         *
+*******************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*******************************************************************************
+* WARNING:  THIS IS A PRIVATE COMPUTER SYSTEM                                 *
+* Unauthorized use of this system is prohibited and will be prosecuted.       *
+* Access to this system and any activities perform on/by/with this system     *
+* will be monitored for all lawful purposes, including to ensure that use is  *
+* authorized,  for management of the system, and to facilitate protection     *
+* against unauthorized access.  During monitoring, information may be         *
+* examined, recorded, copied and used for authorized purposes.  All           *
+* information including personal information placed on or sent over this      *
+* system may be monitored. Use of this system, authorized or unauthorized,    *
+* constitutes consent to monitoring. Unauthorized use may subject you to      *
+* criminal prosecution. If you have not been granted explicit authorization   *
+* to use this system or do not consent to monitoring, DISCONNECT NOW.         *
+*******************************************************************************
+
+
+Cisco Nexus Operating System (NX-OS) Software
+TAC support: http://www.cisco.com/tac
+Copyright (C) 2002-2019, Cisco and/or its affiliates.
+All rights reserved.
+The copyrights to certain works contained in this software are
+owned by other third parties and used and distributed under their own
+licenses, such as open source.  This software is provided "as is," and unless
+otherwise stated, there is no warranty, express or implied, including but not
+limited to warranties of merchantability and fitness for a particular purpose.
+Certain components of this software are licensed under
+the GNU General Public License (GPL) version 2.0 or 
+GNU General Public License (GPL) version 3.0  or the GNU
+Lesser General Public License (LGPL) Version 2.1 or 
+Lesser General Public License (LGPL) Version 2.0. 
+A copy of each such license is available at
+http://www.opensource.org/licenses/gpl-2.0.php and
+http://opensource.org/licenses/gpl-3.0.html and
+http://www.opensource.org/licenses/lgpl-2.1.php and
+http://www.gnu.org/licenses/old-licenses/library.txt.
+CNPUOnsm0101# 
+CNPUOnsm0101# 
+CNPUOnsm0101# 
+CNPUOnsm0101# show running-config 
+ 
+!Command: show running-config
+!Running configuration last done at: Mon Aug 11 16:32:38 2025
+!Time: Tue Apr 14 00:25:49 2026
+
+version 9.3(2) Bios:version 05.42 
+hostname CNPUOnsm0101
+vdc CNPUOnsm0101 id 1
+  limit-resource vlan minimum 16 maximum 4094
+  limit-resource vrf minimum 2 maximum 4096
+  limit-resource port-channel minimum 0 maximum 511
+  limit-resource u4route-mem minimum 248 maximum 248
+  limit-resource u6route-mem minimum 96 maximum 96
+  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m6route-mem minimum 8 maximum 8
+
+feature telnet
+feature tacacs+
+cfs eth distribute
+feature bgp
+feature udld
+feature interface-vlan
+feature hsrp
+feature lacp
+feature dhcp
+feature vpc
+feature lldp
+feature bfd
+
+no password strength-check
+username admin password 5 $5$xpJyLzdu$sAjZC1gDFcYdLyb1yLDKaqv7eb/G5Y5DR3IHYZwYJP/  role network-admin
+username etn-snmp-ro password 5 $5$C9U5o/Wm$CZErQACH6FRTNaAmR/q.TgOEHe6bLswCP8.rCtdt.y6  role network-operator
+username etn-snmp-ro passphrase  lifetime 99999 warntime 14 gracetime 3
+username etn-snmp-rw password 5 $5$eWMMo13c$3C9DCGR3Vvsay9LArjLjmN9QNm8S/Ve2.aNhBuF8p0B  role network-admin
+username etn-snmp-rw passphrase  lifetime 99999 warntime 14 gracetime 3
+
+banner motd #
+*******************************************************************************
+* WARNING:  THIS IS A PRIVATE COMPUTER SYSTEM                                 *
+* Unauthorized use of this system is prohibited and will be prosecuted.       *
+* Access to this system and any activities perform on/by/with this system     *
+* will be monitored for all lawful purposes, including to ensure that use is  *
+* authorized,  for management of the system, and to facilitate protection     *
+* against unauthorized access.  During monitoring, information may be         *
+* examined, recorded, copied and used for authorized purposes.  All           *
+* information including personal information placed on or sent over this      *
+* system may be monitored. Use of this system, authorized or unauthorized,    *
+* constitutes consent to monitoring. Unauthorized use may subject you to      *
+* criminal prosecution. If you have not been granted explicit authorization   *
+* to use this system or do not consent to monitoring, DISCONNECT NOW.         *
+*******************************************************************************
+#
+
+no ip domain-lookup
+ip domain-name etn.com
+ip tacacs source-interface Vlan555
+tacacs-server timeout 60
+tacacs-server host 10.251.252.33 key 7 "qwwhsr99" 
+tacacs-server host 10.251.253.33 key 7 "qwwhsr99" 
+aaa group server tacacs+ ETN-TACACS 
+    server 10.251.252.33 
+    server 10.251.253.33 
+    source-interface Vlan555
+system default switchport
+ip access-list 98
+  10 remark --BEGIN SNMP RO ACL --
+  20 remark Trusted Network Tools SNMP Segment
+  30 permit ip 10.251.252.0 0.0.3.255 any 
+  40 remark Cisco Prime Infrastructure
+  50 permit ip 151.110.207.100/32 any 
+  60 remark NetScout nGenius
+  70 permit ip 151.110.7.209/32 any 
+  80 remark SolarWinds Poller(s)
+  90 permit ip 172.20.92.97/32 any 
+  91 permit ip 172.20.92.96/32 any 
+  100 permit ip 151.110.140.93/32 any 
+  110 permit ip 172.20.92.98/32 any 
+  120 remark SmartNet Total Care
+  130 permit ip 151.110.151.51/32 any 
+  140 remark HP Network Node Manager
+  150 permit ip 151.110.140.206/32 any 
+  160 permit ip 151.110.140.207/32 any 
+  170 permit ip 151.110.140.210/32 any 
+  180 permit ip 151.110.126.180/32 any 
+  190 remark Security Operations Server
+  200 permit ip 151.110.126.219/32 any 
+  210 remark Qualsys Scanners Dedicated Subnet(s)
+  220 permit ip 151.110.3.0 0.0.0.255 any 
+  230 permit ip 151.110.126.187/32 any 
+  240 permit ip 10.132.14.13/32 any 
+  250 permit ip 10.132.14.15/32 any 
+  260 permit ip 151.110.126.34/32 any 
+  270 remark ISE Server(s)
+  280 permit ip 151.110.200.161/32 any 
+  290 permit ip 151.110.200.160/32 any 
+  300 permit ip 151.110.200.151/32 any 
+  310 permit ip 151.110.200.150/32 any 
+  320 permit ip 151.110.200.153/32 any 
+  330 permit ip 151.110.200.152/32 any 
+  340 permit ip 151.110.200.155/32 any 
+  350 permit ip 151.110.200.154/32 any 
+  360 permit ip 151.110.200.157/32 any 
+  370 permit ip 151.110.200.156/32 any 
+  380 permit ip 151.110.200.159/32 any 
+  390 permit ip 151.110.200.158/32 any 
+ip access-list 99
+  10 remark --BEGIN SNMP RW ACL --
+  20 permit ip 151.110.207.100/32 any 
+copp profile strict
+snmp-server location (CNPUO)
+snmp-server source-interface traps Vlan555
+snmp-server source-interface informs Vlan555
+snmp-server user admin network-admin auth md5 0x352536ba8362dddef66087c1b0404e9f priv 0x352536ba8362dddef66087c1b0404e9f localizedkey
+snmp-server user etn-snmp-ro network-operator auth sha 0xafdc72b8de89c337958c4c4b9ea460f941f7d161 priv aes-128 0xafdc72b8de89c337958c4c4b9ea460f941f7d161 localizedkey
+snmp-server user etn-snmp-ro enforcePriv
+snmp-server user etn-snmp-rw network-admin auth sha 0x65d951b610b29beed8eaa938ad8bc52f7ad229bf priv aes-128 0x65d951b610b29beed8eaa938ad8bc52f7ad229bf localizedkey
+snmp-server user etn-snmp-rw enforcePriv
+snmp-server user etn-snmp-ro use-ipv4acl 98
+snmp-server user etn-snmp-rw use-ipv4acl 99
+snmp-server host 151.110.207.100 traps version 1 etn-snmp-rw
+rmon event 1 description FATAL(1) owner PMON@FATAL
+rmon event 2 description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 description ERROR(3) owner PMON@ERROR
+rmon event 4 description WARNING(4) owner PMON@WARNING
+rmon event 5 description INFORMATION(5) owner PMON@INFO
+snmp-server enable traps callhome event-notify
+snmp-server enable traps callhome smtp-send-fail
+snmp-server enable traps cfs state-change-notif
+snmp-server enable traps cfs merge-failure
+snmp-server enable traps aaa server-state-change
+snmp-server enable traps feature-control FeatureOpStatusChange
+snmp-server enable traps sysmgr cseFailSwCoreNotifyExtended
+snmp-server enable traps config ccmCLIRunningConfigChanged
+snmp-server enable traps snmp authentication
+snmp-server enable traps link cisco-xcvr-mon-status-chg
+snmp-server enable traps vtp notifs
+snmp-server enable traps vtp vlancreate
+snmp-server enable traps vtp vlandelete
+snmp-server enable traps bridge newroot
+snmp-server enable traps bridge topologychange
+snmp-server enable traps stpx inconsistency
+snmp-server enable traps stpx root-inconsistency
+snmp-server enable traps stpx loop-inconsistency
+snmp-server enable traps system Clock-change-notification
+snmp-server enable traps feature-control ciscoFeatOpStatusChange
+snmp-server enable traps mmode cseNormalModeChangeNotify
+snmp-server enable traps mmode cseMaintModeChangeNotify
+ntp server 151.110.126.15 prefer use-vrf default
+ntp server 151.110.126.110 use-vrf default
+ntp source-interface  Vlan555
+aaa authentication login default group ETN-TACACS local 
+aaa authentication login console group ETN-TACACS local 
+aaa authorization config-commands default group ETN-TACACS local 
+aaa authorization commands default group ETN-TACACS local 
+aaa accounting default group ETN-TACACS local 
+tacacs-server directed-request 
+
+ip route 47.100.96.191/32 10.249.1.164 name Checkpoint-DMZ-networks
+ip route 47.100.97.97/32 10.249.1.164 name Checkpoint-DMZ-networks
+ip route 47.117.82.210/32 10.249.1.164 name Checkpoint-DMZ-networks
+ip route 101.132.35.147/32 10.249.1.164 name Checkpoint-DMZ-networks
+ip route 148.179.137.0/24 10.249.1.172 name F5-internal-VIP-network
+ip route 148.179.138.0/25 10.249.1.164 name Checkpoint-DMZ-networks
+ip route 148.179.138.128/25 10.249.1.164 name Checkpoint-DMZ-networks
+ip route 148.179.142.0/24 10.249.1.172 name F5-Temp-Route
+ip route 185.46.212.93/32 10.249.1.172 name Zscaler-Global-ZEN
+system vlan long-name
+vlan 1,3,99,501-502,550-556,560-561,622,624,810-814,1502-1504,1507
+vlan 3
+  name INTERNET-L2-PUBLIC
+vlan 99
+  state suspend
+  shutdown
+  name BLACKHOLE_SHUTDOWN_VLAN
+vlan 501
+  name 10.235.40.0/23-SERVER-1
+vlan 502
+  name 10.235.42.0/23-SERVER-2
+vlan 550
+  name 10.249.0.224/30-ATT-EVPN-PTP1
+vlan 552
+  name 10.249.0.232/30-ATT-PTP3-AVPN
+vlan 554
+  name 10.249.0.240/30-INTER-VLAN-BGP
+vlan 555
+  name 10.252.48.0/25-NETWORK_OOB_MGMT
+vlan 556
+  name 10.252.48.128/29-SECOPS_OOB_MGMT
+vlan 560
+  name 10.249.1.160/29-FW-TRANSIT
+vlan 561
+  name 10.249.1.168/29-F5-TRANSIT
+vlan 622
+  name SD-WAN_Service
+vlan 810
+  name 148.179.137.0/24-DMZ
+vlan 811
+  name 148.179.138.0/24-DMZ
+vlan 812
+  name 148.179.133.0/24-DMZ
+vlan 813
+  name 148.179.141.0/24-DMZ
+vlan 814
+  name 148.179.142.0/24-DMZ
+vlan 1502
+  name 10.220.226.0/24-VCE-OOB
+vlan 1503
+  name 10.220.227.0/24-VCE-ESXI-MGMT
+vlan 1504
+  name 10.220.228.0/24-VCE-VMOTION
+vlan 1507
+  name 10.220.229.0/24-VCE-VSAN
+
+spanning-tree vlan 1-3000 priority 24576
+ip prefix-list CHINA_IDC_CONNECTED seq 10 permit 10.252.48.0/25 
+ip prefix-list CHINA_IDC_CONNECTED seq 20 permit 10.252.48.128/25 
+ip prefix-list CHINA_IDC_CONNECTED seq 30 permit 10.235.40.0/23 
+ip prefix-list CHINA_IDC_CONNECTED seq 40 permit 10.235.42.0/23 
+ip prefix-list CHINA_IDC_CONNECTED seq 50 permit 10.220.226.0/24 
+ip prefix-list CHINA_IDC_CONNECTED seq 60 permit 10.220.227.0/24 
+ip prefix-list CHINA_IDC_CONNECTED seq 70 permit 10.220.228.0/24 
+ip prefix-list CHINA_IDC_CONNECTED seq 80 permit 10.220.229.0/24 
+ip prefix-list CHINA_IDC_CONNECTED seq 81 permit 10.249.1.160/29 
+ip prefix-list CHINA_IDC_CONNECTED seq 82 permit 10.249.1.168/29 
+ip prefix-list CHINA_IDC_CONNECTED seq 83 permit 10.249.0.240/30 
+ip prefix-list CHINA_IDC_CONNECTED seq 84 permit 10.249.0.245/32 
+ip prefix-list CHINA_IDC_STATIC seq 10 permit 185.46.212.93/32 
+ip prefix-list CHINA_IDC_STATIC seq 11 permit 148.179.137.0/24 
+ip prefix-list CHINA_IDC_STATIC seq 12 permit 148.179.138.0/25 
+ip prefix-list CHINA_IDC_STATIC seq 13 permit 148.179.142.0/24 
+ip prefix-list CHINA_IDC_STATIC seq 14 permit 148.179.138.128/25 
+ip prefix-list CHINA_IDC_STATIC seq 19 permit 101.132.35.147/32 
+ip prefix-list CHINA_IDC_STATIC seq 24 permit 47.100.97.97/32 
+ip prefix-list CHINA_IDC_STATIC seq 29 permit 47.100.96.191/32 
+ip prefix-list CHINA_IDC_STATIC seq 34 permit 47.117.82.210/32 
+ip community-list standard CSDWAN seq 10 permit 65251:555 
+ip community-list standard CSDWAN2 seq 10 permit 65251:566 
+route-map CONNECTED permit 10
+  match ip address prefix-list CHINA_IDC_CONNECTED 
+route-map FILTER_FIREWALL permit 10
+  match ip address prefix-list CHINA_IDC_CONNECTED CHINA_IDC_STATIC 
+route-map ROUTE-MAP-STATIC permit 20
+  match ip address prefix-list CHINA_IDC_STATIC 
+route-map ROUTES_FROM_ATT_SDWAN deny 5
+  match community CSDWAN2 
+route-map ROUTES_FROM_ATT_SDWAN permit 10
+route-map ROUTES_FROM_CSDWAN permit 10
+  match community CSDWAN 
+route-map ROUTES_TO_CSDWAN deny 5
+  match community CSDWAN 
+route-map ROUTES_TO_CSDWAN permit 10
+  match ip address prefix-list CHINA_IDC_CONNECTED 
+  set community 64701:555 
+route-map ROUTES_TO_CSDWAN permit 20
+  match ip address prefix-list CHINA_IDC_STATIC 
+  set community 64701:555 
+service dhcp
+ip dhcp relay
+ipv6 dhcp relay
+vrf context management
+vpc domain 501
+  peer-switch
+  role priority 8192
+  system-priority 8192
+  peer-keepalive destination 10.252.48.3 source 10.252.48.2 vrf default
+  peer-gateway
+  auto-recovery
+  ipv6 nd synchronize
+  ip arp synchronize
+
+
+interface Vlan1
+  no ip redirects
+  no ipv6 redirects
+
+interface Vlan501
+  description 10.235.40.0/23-SERVER-VM-1
+  no shutdown
+  no ip redirects
+  ip address 10.235.40.2/23
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 501 
+    authentication md5 key-string HSRP555Eaton10.235.40.0
+    preempt delay minimum 30 reload 60 
+    priority 115
+    ip 10.235.40.1
+
+interface Vlan502
+  description 10.235.42.0/23-SERVER-VM-2
+  no shutdown
+  no ip redirects
+  ip address 10.235.42.2/23
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 502 
+    authentication md5 key-string HSRP555Eaton10.235.42.0
+    preempt delay minimum 30 reload 60 
+    priority 115
+    ip 10.235.42.1
+
+interface Vlan550
+  description 10.249.0.224/30-ATT-EVPN-PTP1
+  no shutdown
+  no ip redirects
+  ip address 10.249.0.225/30
+  no ipv6 redirects
+
+interface Vlan552
+  description 10.249.0.232/30-ATT-PTP3-AVPN
+  no shutdown
+  no ip redirects
+  ip address 10.249.0.229/30
+  no ipv6 redirects
+
+interface Vlan554
+  description 10.249.0.240/30-INTER-VLAN-BGP
+  no shutdown
+  no ip redirects
+  ip address 10.249.0.241/30
+  no ipv6 redirects
+
+interface Vlan555
+  description 10.252.48.0-Network_Management
+  no shutdown
+  no ip redirects
+  ip address 10.252.48.2/25
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 555 
+    authentication md5 key-string HSRP555Eaton10.252.48.0
+    preempt delay minimum 30 reload 60 
+    priority 115
+    ip 10.252.48.1
+
+interface Vlan556
+  description 10.252.48.128/25-Security_Management
+  no shutdown
+  no ip redirects
+  ip address 10.252.48.130/25
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 556 
+    authentication md5 key-string HSRP555Eaton10.252.48.128
+    preempt delay minimum 30 reload 60 
+    priority 115
+    ip 10.252.48.129
+
+interface Vlan560
+  description 10.249.1.160/29-FW-TRANSIT
+  no shutdown
+  no ip redirects
+  ip address 10.249.1.162/29
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 560 
+    authentication md5 key-string HSRP555Eaton10.249.1.160
+    preempt delay minimum 30 reload 60 
+    priority 115
+    ip 10.249.1.161
+
+interface Vlan561
+  description 10.249.1.168/29-F5-TRANSIT
+  no shutdown
+  no ip redirects
+  ip address 10.249.1.170/29
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 561 
+    authentication md5 key-string HSRP555Eaton10.249.1.168
+    preempt delay minimum 30 reload 60 
+    priority 115
+    ip 10.249.1.169
+
+interface Vlan622
+  no shutdown
+  no ip redirects
+  ip address 10.252.235.1/28
+  no ipv6 redirects
+
+interface Vlan624
+  no shutdown
+  no ip redirects
+  ip address 10.252.235.20/28
+  no ipv6 redirects
+
+interface Vlan1502
+  description 10.220.226.0/24-Vxrail-VCE-OOB
+  no shutdown
+  no ip redirects
+  ip address 10.220.226.2/24
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 1502 
+    authentication md5 key-string HSRP555Eaton10.220.226.0
+    preempt delay minimum 30 reload 60 
+    priority 115
+    ip 10.220.226.1
+
+interface Vlan1503
+  description 10.220.227.0/24-Vxrail-VCE-ESXI-MGMT 
+  no shutdown
+  no ip redirects
+  ip address 10.220.227.2/24
+  no ipv6 redirects
+  hsrp version 2
+  hsrp 1503 
+    authentication md5 key-string HSRP555Eaton10.220.227.0
+    preempt delay minimum 30 reload 60 
+    priority 115
+    ip 10.220.227.1
+
+interface port-channel50
+  description ACCESS SWITCH DOWNLINK CNPUOnsm0103 & CNPUOnsm0104   
+  switchport mode trunk
+  switchport trunk native vlan 99
+  spanning-tree port type network
+  mtu 9216
+  vpc 50
+
+interface port-channel51
+  description VXRAIL TOR DOWNLINK CNPUOnsi0105 & CNPUOnsm0106
+  switchport mode trunk
+  switchport trunk native vlan 99
+  spanning-tree port type network
+  mtu 9216
+  vpc 51
+
+interface port-channel52
+  description FIREWALL-CHECKPOINT PRIMARY-SG6600
+  switchport mode trunk
+  switchport trunk allowed vlan 3,560,810-814
+  mtu 9216
+  vpc 52
+
+interface port-channel53
+  description FIREWALL-CHECKPOINT SECONDARY-SG6600
+  switchport mode trunk
+  switchport trunk allowed vlan 3,560,810-814
+  mtu 9216
+  vpc 53
+
+interface port-channel54
+  description LOAD BALANCER-BIG-F5-I5800 PRIMARY
+  switchport mode trunk
+  switchport trunk allowed vlan 3,561,810-814
+  mtu 9216
+  vpc 54
+
+interface port-channel55
+  description LOAD BALANCER-BIG-F5-I5800 SECONDARY
+  switchport mode trunk
+  switchport trunk allowed vlan 3,561,810-814
+  mtu 9216
+  vpc 55
+
+interface port-channel60
+  description VPC Peer-Link 
+  switchport mode trunk
+  spanning-tree port type network
+  vpc peer-link
+
+interface Ethernet1/1
+  description ATT-FEXWARE-Gi0/0/0-CNEATCPNE310101UJRT01
+  switchport mode trunk
+  switchport trunk allowed vlan 550,624
+
+interface Ethernet1/2
+  description ATT-FEXWARE-Gi0/0/0-CNEATCPNE310102UJRT01
+  switchport mode trunk
+  switchport trunk allowed vlan 552
+
+interface Ethernet1/3
+  description CNPUOnrm0101-INTERNET ROUTER1 
+  switchport access vlan 3
+
+interface Ethernet1/4
+
+interface Ethernet1/5
+
+interface Ethernet1/6
+
+interface Ethernet1/7
+
+interface Ethernet1/8
+
+interface Ethernet1/9
+
+interface Ethernet1/10
+
+interface Ethernet1/11
+  description CNPUOnrM0101-G0/0/0 Cisco SD-WAN
+  switchport mode trunk
+  switchport trunk native vlan 99
+  switchport trunk allowed vlan 3
+
+interface Ethernet1/12
+  shutdown
+
+interface Ethernet1/13
+  shutdown
+
+interface Ethernet1/14
+
+interface Ethernet1/15
+
+interface Ethernet1/16
+
+interface Ethernet1/17
+
+interface Ethernet1/18
+
+interface Ethernet1/19
+
+interface Ethernet1/20
+
+interface Ethernet1/21
+
+interface Ethernet1/22
+
+interface Ethernet1/23
+
+interface Ethernet1/24
+
+interface Ethernet1/25
+  switchport access vlan 555
+
+interface Ethernet1/26
+  switchport access vlan 555
+
+interface Ethernet1/27
+  description MGMT CNPUOnsi0104
+  switchport access vlan 555
+
+interface Ethernet1/28
+
+interface Ethernet1/29
+
+interface Ethernet1/30
+
+interface Ethernet1/31
+
+interface Ethernet1/32
+  description CNPUOnrM0101-G0/0/1  Cisco SD-WAN
+  switchport mode trunk
+  switchport trunk native vlan 99
+  switchport trunk allowed vlan 622
+
+interface Ethernet1/33
+
+interface Ethernet1/34
+
+interface Ethernet1/35
+  description CNPUOnrM0101-G0/0/2  Cisco SD-WAN
+  switchport mode trunk
+  switchport trunk native vlan 99
+  switchport trunk allowed vlan 624
+
+interface Ethernet1/36
+
+interface Ethernet1/37
+
+interface Ethernet1/38
+
+interface Ethernet1/39
+
+interface Ethernet1/40
+
+interface Ethernet1/41
+  description FIREWALL-CHECKPOINT-SG6600
+  switchport mode trunk
+  switchport trunk allowed vlan 3,560,810-814
+  mtu 9216
+  channel-group 52 mode active
+
+interface Ethernet1/42
+  description FIREWALL-CHECKPOINT-SG6600 
+  switchport mode trunk
+  switchport trunk allowed vlan 3,560,810-814
+  mtu 9216
+  channel-group 53 mode active
+
+interface Ethernet1/43
+  description LOAD BALANCER-BIG-F5-PRIMARY-I5800
+  switchport mode trunk
+  switchport trunk allowed vlan 3,561,810-814
+  spanning-tree port type edge trunk
+  mtu 9216
+  channel-group 54 mode active
+
+interface Ethernet1/44
+  description LOAD BALANCER-BIG-F5-SECONDARY-I5800
+  switchport mode trunk
+  switchport trunk allowed vlan 3,561,810-814
+  spanning-tree port type edge trunk
+  mtu 9216
+  channel-group 55 mode active
+
+interface Ethernet1/45
+
+interface Ethernet1/46
+
+interface Ethernet1/47
+  switchport mode trunk
+  switchport trunk native vlan 99
+  mtu 9216
+  channel-group 51 mode active
+
+interface Ethernet1/48
+  switchport mode trunk
+  switchport trunk native vlan 99
+  mtu 9216
+  channel-group 51 mode active
+
+interface Ethernet1/49
+  switchport mode trunk
+  switchport trunk native vlan 99
+  mtu 9216
+  channel-group 50 mode active
+
+interface Ethernet1/50
+  switchport mode trunk
+  switchport trunk native vlan 99
+  mtu 9216
+  channel-group 50 mode active
+
+interface Ethernet1/51
+
+interface Ethernet1/52
+
+interface Ethernet1/53
+
+interface Ethernet1/54
+
+interface Ethernet1/55
+
+interface Ethernet1/56
+
+interface Ethernet1/57
+
+interface Ethernet1/58
+
+interface Ethernet1/59
+  switchport mode trunk
+  channel-group 60 mode active
+
+interface Ethernet1/60
+  switchport mode trunk
+  channel-group 60 mode active
+
+interface mgmt0
+  vrf member management
+
+interface loopback0
+  ip address 10.249.0.245/32
+line console
+line vty
+boot nxos bootflash:/nxos.9.3.2.bin 
+router bgp 64701
+  router-id 10.249.0.245
+  log-neighbor-changes
+  address-family ipv4 unicast
+    redistribute direct route-map CONNECTED
+    redistribute static route-map ROUTE-MAP-STATIC
+  neighbor 10.249.0.226
+    bfd
+    remote-as 65002
+    description ATT WAN
+    password 3 db72f76b0455ad8af901e5454fdc167d
+    address-family ipv4 unicast
+      send-community
+      route-map ROUTES_FROM_ATT_SDWAN in
+      route-map ROUTES_TO_CSDWAN out
+      soft-reconfiguration inbound
+  neighbor 10.249.0.230
+    bfd
+    remote-as 65002
+    description ATT WAN
+    password 3 db72f76b0455ad8af901e5454fdc167d
+    address-family ipv4 unicast
+      send-community
+      route-map ROUTES_FROM_ATT_SDWAN in
+      route-map ROUTES_TO_CSDWAN out
+      soft-reconfiguration inbound
+  neighbor 10.249.0.242
+    bfd
+    remote-as 64701
+    description CORE2 BGP PEER
+    password 3 db72f76b0455ad8af901e5454fdc167d
+    address-family ipv4 unicast
+      send-community
+      next-hop-self
+      soft-reconfiguration inbound
+  neighbor 10.252.235.14
+    bfd
+    remote-as 65251
+    description CNPUOnrM0101
+    password 3 9aea3d68e3f69352d3d00b59695a9e0e
+    timers 15 45
+    address-family ipv4 unicast
+      send-community
+      route-map ROUTES_FROM_CSDWAN in
+      route-map ROUTES_TO_CSDWAN out
+      soft-reconfiguration inbound
+no system default switchport shutdown
+
+logging monitor 7
+
+
+CNPUOnsm0101#                             
