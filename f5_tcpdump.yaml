@@ -1,0 +1,80 @@
+version: 1
+key: f5_tcpdump
+name: "F5 TCPDump Capture"
+description: "Collect a targeted tcpdump from a selected F5 VIP, upload the capture to SCP Dropbox, and notify the submitter with retrieval instructions."
+category: "Troubleshooting"
+manual_duration_minutes: 5
+enabled: true
+inputs:
+
+  - key: incident_number
+    label: Incident number
+    type: string
+    required: true
+    help_text: "Enter the incident or ticket that authorizes this packet capture."
+    validators:
+      - regex: "^INC[0-9]+$"
+        flags: ["IGNORECASE"]
+        message: "Enter an incident number in the format INC followed by digits."
+
+  - key: f5_virtual_machine
+    label: F5 load balancer
+    type: object
+    model: virtualization.VirtualMachine
+    required: true
+    help_text: "Select the F5 virtual machine that hosts the VIP you need to troubleshoot."
+    filter:
+      query:
+        { "role__name": "Traffic Load Balancer", "status__name": "Active" }
+
+  - key: vip_ip
+    label: Destination VIP
+    type: choice
+    required: true
+    depends_on:
+      - "f5_virtual_machine"
+    help_text: "Choose one of the VIP IP addresses currently hosted on the selected F5."
+    choices: |
+      [
+        {% for vip in (inputs.f5_virtual_machine | f5_hosted_vip_choices) %}
+        {"value": "{{ vip.value }}", "label": "{{ vip.label }}"}{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+
+  - key: source_ip
+    label: Source IP address
+    type: string
+    required: true
+    help_text: "Enter the client or upstream source IP to filter in the capture."
+    validators:
+      - regex: "^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$|^(([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:)|([0-9A-Fa-f]{1,4}:){1,7}:|([0-9A-Fa-f]{1,4}:){1,6}:[0-9A-Fa-f]{1,4}|([0-9A-Fa-f]{1,4}:){1,5}(:[0-9A-Fa-f]{1,4}){1,2}|([0-9A-Fa-f]{1,4}:){1,4}(:[0-9A-Fa-f]{1,4}){1,3}|([0-9A-Fa-f]{1,3}:){1,3}(:[0-9A-Fa-f]{1,4}){1,4}|([0-9A-Fa-f]{1,4}:){1,2}(:[0-9A-Fa-f]{1,4}){1,5}|[0-9A-Fa-f]{1,4}:((:[0-9A-Fa-f]{1,4}){1,6})|:((:[0-9A-Fa-f]{1,4}){1,7}|:))$"
+        message: "Enter a valid IPv4 or IPv6 address."
+
+  - key: capture_duration_seconds
+    label: Capture duration (seconds)
+    type: integer
+    required: true
+    help_text: "Enter how long the tcpdump should run before the workflow stops it automatically."
+    validators:
+      - regex: "^(?:[1-9][0-9]?|1[01][0-9]|120)$"
+        message: "Enter a capture duration between 1 and 120 seconds."
+
+  - key: capture_tls_keys
+    label: Include TLS decryption keys
+    type: boolean
+    required: false
+    help_text: "Enable only when you need to decrypt TLS traffic in Wireshark. The resulting capture is more sensitive because it can contain session-secret data."
+
+actions:
+
+  - type: nautobot
+    name: capture_f5_tcpdump
+    script: scripts/f5_tcpdump.py
+    with:
+      incident_number: "{{ inputs.incident_number }}"
+      submitter_email: "{{ user.email }}"
+      f5_virtual_machine: "{{ inputs.f5_virtual_machine.id }}"
+      vip_ip: "{{ inputs.vip_ip }}"
+      source_ip: "{{ inputs.source_ip }}"
+      capture_duration_seconds: "{{ inputs.capture_duration_seconds }}"
+      capture_tls_keys: "{{ inputs.capture_tls_keys }}"
