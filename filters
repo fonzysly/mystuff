@@ -1,0 +1,105 @@
+# Panorama Jinja Filter Example
+
+## scripts/lib/panorama_client.py
+
+```python
+import xml.etree.ElementTree as ET
+
+import requests
+
+
+class PanoramaClientError(Exception):
+    pass
+
+
+class PanoramaClient:
+    def __init__(self, base_url, api_key, *, timeout=(10, 30), verify_ssl=False, session=None):
+        self.base_url = str(base_url).rstrip("/")
+        self.api_key = str(api_key).strip()
+        self.timeout = timeout
+        self.verify_ssl = verify_ssl
+        self.session = session or requests.Session()
+
+    def _get_xml(self, params):
+        response = self.session.get(
+            f"{self.base_url}/api/",
+            params=params,
+            timeout=self.timeout,
+            verify=self.verify_ssl,
+        )
+        response.raise_for_status()
+
+        root = ET.fromstring(response.text)
+        if root.attrib.get("status") != "success":
+            message = root.findtext("./msg/line") or "Panorama API call failed."
+            raise PanoramaClientError(message)
+        return root
+
+    def get_managed_firewalls(self):
+        root = self._get_xml(
+            {
+                "type": "op",
+                "cmd": "<show><devices><all></all></devices></show>",
+                "key": self.api_key,
+            }
+        )
+
+        firewalls = []
+        for entry in root.findall(".//result/devices/entry"):
+            serial = (entry.findtext("serial") or "").strip()
+            hostname = (entry.findtext("hostname") or serial).strip()
+            ip_address = (entry.findtext("ip-address") or "").strip()
+            if not serial:
+                continue
+
+            label = hostname if not ip_address else f"{hostname} ({ip_address})"
+            firewalls.append(
+                {
+                    "value": serial,
+                    "label": label,
+                    "hostname": hostname,
+                    "ip_address": ip_address,
+                }
+            )
+
+        return sorted(firewalls, key=lambda item: item["label"].lower())
+```
+
+## filters/panorama_filters.py
+
+```python
+from scripts.lib.panorama_client import PanoramaClient
+
+
+PANORAMA_URL = "https://panorama.example.com"
+PANORAMA_API_KEY = "replace-me"
+
+
+def panorama_firewall_choices(_value=None):
+    client = PanoramaClient(
+        base_url=PANORAMA_URL,
+        api_key=PANORAMA_API_KEY,
+        verify_ssl=False,
+    )
+    return client.get_managed_firewalls()
+
+
+FILTERS = {
+    "panorama_firewall_choices": panorama_firewall_choices,
+}
+```
+
+## workflow YAML
+
+```yaml
+- key: firewall_serial
+  label: Firewall
+  type: choice
+  required: true
+  choices: |
+    [
+      {% for firewall in ('' | panorama_firewall_choices) %}
+      {"value": "{{ firewall.value }}", "label": "{{ firewall.label }}"}{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ]
+```
