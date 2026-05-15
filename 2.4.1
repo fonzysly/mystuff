@@ -1,0 +1,32 @@
+Use this as the agent prompt:
+
+Fix nautobot-workflow-launcher 2.4.0 so WorkflowAction.order is retained and used again.
+
+Requirements:
+
+Restore WorkflowAction.order = models.PositiveIntegerField(default=0) in the plugin model.
+Restore migration compatibility for environments that already had 0017_workflowaction_order.
+Do not remove order. The correct end state is that the model, migrations, datasource sync code, and executor all agree that WorkflowAction.order exists.
+Update datasource sync so action rows are created with explicit order values using YAML sequence order within each phase.
+Update execution so actions run by order, then id as a tiebreaker, not by id alone.
+Ensure upgrade safety from databases currently on 0016 and on 0017.
+Add or update tests for:
+migration/upgrade path
+GitRepository sync creating ordered actions
+workflow execution honoring YAML order
+verify_snow_change-style dependent actions not evaluating before the prerequisite action
+Produce a patched release candidate for 2.4.0 such as 2.4.1 or an internal patched wheel.
+Implementation guidance:
+
+Reintroduce 0017_workflowaction_order if it was dropped from the package.
+If needed, add a follow-up migration after 0017 only for normalization or backfill, not removal.
+Datasource should enumerate actions per phase and persist order.
+Executor should query with order_by("order", "id").
+Deliverables:
+
+code changes
+migration files
+tests
+built wheel artifact
+short summary of upgrade behavior for existing environments
+Do not use the current database-default workaround as the final fix; that is only a temporary compatibility shim.
