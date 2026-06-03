@@ -1,0 +1,881 @@
+# CLAUDE.md
+
+# AI Assistant for Nautobot Workflow Launcher
+
+Version: 2.0
+
+---
+
+# Mission
+
+Transform Workflow Launcher from a workflow execution platform into an AI-powered operational orchestration platform.
+
+The AI Assistant must allow users to:
+
+* Discover workflows using natural language
+* Execute workflows conversationally
+* Compose multiple workflows into larger operational tasks
+* Explain actions before execution
+* Detect missing automation capabilities
+* Generate workflow proposals for future automation
+* Learn organizational automation demand over time
+
+The AI Assistant is an orchestration and planning layer.
+
+Workflow Launcher remains the authoritative execution platform.
+
+---
+
+# Strategic Vision
+
+Current State
+
+User
+→ Find Workflow
+→ Fill Form
+→ Execute
+
+Future State
+
+User
+→ Describe Outcome
+→ AI Determines Approach
+→ Human Approves
+→ Workflow Launcher Executes
+
+Example
+
+User:
+
+"Decommission switch AMS-SW-102"
+
+AI:
+
+1. Understand intent
+2. Discover available workflows
+3. Build execution plan
+4. Request approval
+5. Execute
+6. Summarize results
+
+The user describes outcomes, not workflows.
+
+---
+
+# Core Principles
+
+## Principle 1
+
+AI Plans
+
+Workflow Launcher Executes
+
+The AI Assistant must never directly:
+
+* Execute Nautobot scripts
+* Launch AWX jobs
+* Modify Nautobot objects
+* Access network devices
+* Access credentials
+* Execute arbitrary code
+
+The AI produces plans.
+
+Workflow Launcher executes plans.
+
+---
+
+## Principle 2
+
+Explain Before Execute
+
+Before execution the AI must present:
+
+* Selected workflow(s)
+* Required inputs
+* Execution sequence
+* Expected outcome
+* Risk level
+* Estimated duration
+
+Workflow execution lifecycle:
+
+Plan
+→ Explain
+→ Approve
+→ Execute
+→ Summarize
+
+---
+
+## Principle 3
+
+Workflows Are Tools
+
+Every workflow is exposed to the AI as a callable capability.
+
+The AI never reads Git repositories directly.
+
+The AI consumes a normalized Workflow Catalog.
+
+---
+
+## Principle 4
+
+No Hallucinated Automation
+
+The AI must never invent executable actions.
+
+Every executable action must map to:
+
+* Existing workflow
+* Existing action
+* Existing capability
+
+If no capability exists:
+
+Generate a proposal.
+
+Never fabricate execution.
+
+---
+
+## Principle 5
+
+Humans Own Risk
+
+The AI may recommend.
+
+Humans approve.
+
+Workflow Launcher executes.
+
+---
+
+# Capability Levels
+
+The assistant must operate in four capability levels.
+
+---
+
+## Level 1
+
+Workflow Discovery
+
+Purpose:
+
+Find existing workflows.
+
+Example:
+
+User:
+
+"How do I add a VLAN?"
+
+AI:
+
+Recommended workflow:
+Create VLAN
+
+Inputs required:
+
+* Site
+* VLAN ID
+* Change Ticket
+
+No execution occurs.
+
+---
+
+## Level 2
+
+Conversational Workflow Execution
+
+Purpose:
+
+Execute existing workflows without manual form navigation.
+
+Example:
+
+User:
+
+"Create VLAN 150 in Amsterdam"
+
+AI:
+
+Workflow Selected:
+Create VLAN
+
+Detected Inputs:
+
+* Site = Amsterdam
+* VLAN ID = 150
+
+Missing:
+
+* Change Ticket
+
+The AI gathers missing information.
+
+After approval:
+
+Workflow Launcher executes.
+
+---
+
+## Level 3
+
+Workflow Composition
+
+Purpose:
+
+Combine multiple workflows into larger operational tasks.
+
+Example:
+
+User:
+
+"Decommission switch AMS-SW-102"
+
+AI discovers:
+
+backup_device
+
+remove_monitoring
+
+remove_dns
+
+remove_nautobot_record
+
+close_change
+
+The AI builds:
+
+Execution Plan
+
+1. Backup Device
+2. Remove Monitoring
+3. Remove DNS
+4. Remove Nautobot Record
+5. Close Change
+
+The AI composes existing automation.
+
+It never invents automation.
+
+---
+
+## Level 4
+
+Capability Gap Detection
+
+Purpose:
+
+Detect automation demand that cannot currently be satisfied.
+
+Example:
+
+User:
+
+"Audit Cisco devices for expired certificates"
+
+No matching workflow exists.
+
+No composable workflow plan exists.
+
+The AI records:
+
+Capability Requested:
+certificate_audit
+
+Confidence:
+0.92
+
+Workflow Exists:
+false
+
+Composable:
+false
+
+The request becomes a workflow gap.
+
+---
+
+# Capability Gap System
+
+This is a first-class feature.
+
+Every unsupported request should create a capability gap record.
+
+Model:
+
+CapabilityGap
+
+Fields:
+
+id
+
+requested_by
+
+request_text
+
+capability_name
+
+frequency
+
+first_seen
+
+last_seen
+
+status
+
+Status Values:
+
+new
+
+under_review
+
+planned
+
+implemented
+
+rejected
+
+Example:
+
+certificate_audit
+
+Requests:
+23
+
+Status:
+planned
+
+This becomes the automation team's backlog.
+
+---
+
+# Workflow Proposal Engine
+
+When no workflow exists:
+
+The AI should generate a proposal.
+
+Example:
+
+User:
+
+"Rotate F5 admin passwords"
+
+Generated Proposal:
+
+Workflow Name:
+rotate_f5_admin_password
+
+Inputs:
+
+device_group
+
+password
+
+Actions:
+
+backup_config
+
+update_password
+
+verify_login
+
+The proposal is non-executable.
+
+The proposal becomes a candidate workflow.
+
+No automation is performed.
+
+---
+
+# Workflow Catalog API
+
+Create:
+
+GET /api/workflow-launcher/ai/catalog
+
+Purpose:
+
+Expose AI-friendly workflow metadata.
+
+Example:
+
+{
+"workflows": [
+{
+"name": "create_vlan",
+"title": "Create VLAN",
+"description": "Create VLAN on switching infrastructure",
+"risk_level": "medium",
+"aliases": [
+"add vlan",
+"provision vlan"
+],
+"required_inputs": [
+"site",
+"vlan_id"
+]
+}
+]
+}
+
+The AI relies exclusively on this catalog.
+
+---
+
+# Workflow Metadata Enhancements
+
+Extend YAML.
+
+Current:
+
+name: create_vlan
+
+description: Create VLAN
+
+New:
+
+name: create_vlan
+
+description: Create VLAN
+
+ai:
+
+category: switching
+
+aliases:
+
+```
+- add vlan
+
+- create vlan
+
+- provision vlan
+```
+
+examples:
+
+```
+- Create VLAN 150 in Amsterdam
+
+- Add VLAN 200 to Singapore
+```
+
+tags:
+
+```
+- switching
+
+- provisioning
+```
+
+risk_level: medium
+
+estimated_runtime_minutes: 5
+
+required_entities:
+
+```
+- site
+
+- vlan_id
+```
+
+composable: true
+
+Purpose:
+
+Improve workflow selection.
+
+Improve workflow composition.
+
+Improve planning.
+
+---
+
+# AI Service Architecture
+
+Create:
+
+workflow_launcher.ai
+
+Submodules:
+
+workflow_launcher.ai.catalog
+
+workflow_launcher.ai.planner
+
+workflow_launcher.ai.executor
+
+workflow_launcher.ai.proposals
+
+workflow_launcher.ai.gaps
+
+workflow_launcher.ai.memory
+
+workflow_launcher.ai.rag
+
+workflow_launcher.ai.summarizer
+
+workflow_launcher.ai.approvals
+
+workflow_launcher.ai.llm
+
+---
+
+# LLM Provider Layer
+
+Create abstraction.
+
+Interface:
+
+LLMProvider
+
+Implementations:
+
+OpenAIProvider
+
+AnthropicProvider
+
+AzureOpenAIProvider
+
+Future:
+
+OllamaProvider
+
+vLLMProvider
+
+No business logic may depend on provider-specific APIs.
+
+---
+
+# Retrieval-Augmented Generation
+
+Required.
+
+Never rely exclusively on prompts.
+
+Sources:
+
+Workflow Catalog
+
+Workflow Documentation
+
+Workflow Schemas
+
+Execution History
+
+Operational Documentation
+
+Runbooks
+
+Internal Knowledge
+
+Preferred Storage:
+
+PostgreSQL pgvector
+
+---
+
+# Conversation Memory
+
+Store state server-side.
+
+Never depend entirely on model memory.
+
+Example:
+
+User:
+
+"Create VLAN 150 in Amsterdam"
+
+AI:
+
+"What change ticket should I use?"
+
+User:
+
+"CHG123456"
+
+Stored Context:
+
+site=Amsterdam
+
+vlan_id=150
+
+change_ticket=CHG123456
+
+---
+
+# Planning Engine
+
+The planner determines:
+
+Can a single workflow satisfy the request?
+
+If yes:
+
+Generate execution plan.
+
+If no:
+
+Can multiple workflows satisfy the request?
+
+If yes:
+
+Generate composed plan.
+
+If no:
+
+Generate workflow proposal.
+
+Record capability gap.
+
+Decision Tree
+
+Intent
+
+↓
+
+Single Workflow?
+
+↓
+
+Yes → Execute Path
+
+↓
+
+No
+
+↓
+
+Composable Plan?
+
+↓
+
+Yes → Composed Plan
+
+↓
+
+No
+
+↓
+
+Proposal + Gap Detection
+
+---
+
+# Execution Plans
+
+Represent plans as DAGs.
+
+Example:
+
+backup_device
+
+↓
+
+remove_monitoring
+
+↓
+
+remove_dns
+
+↓
+
+remove_nautobot
+
+Future:
+
+Parallel execution
+
+Rollback plans
+
+Dependency resolution
+
+Conditional execution
+
+---
+
+# Approval Framework
+
+All execution plans create Approval records.
+
+States:
+
+draft
+
+pending
+
+approved
+
+rejected
+
+executing
+
+completed
+
+failed
+
+Only approved plans may execute.
+
+---
+
+# Risk Levels
+
+Workflow risk:
+
+low
+
+medium
+
+high
+
+critical
+
+Rules:
+
+Low:
+
+Optional approval
+
+Medium:
+
+User confirmation
+
+High:
+
+Explicit approval
+
+Critical:
+
+Elevated approval
+
+Future:
+
+Role-based approval policies
+
+---
+
+# Explainability Requirements
+
+Every recommendation must include:
+
+Selected workflow
+
+Reason selected
+
+Confidence score
+
+Inputs
+
+Risk level
+
+Expected outcome
+
+Estimated duration
+
+The AI must always explain itself.
+
+---
+
+# Audit Requirements
+
+Store:
+
+Prompt
+
+Conversation
+
+Model
+
+Workflow Selection
+
+Execution Plan
+
+Approval Records
+
+Results
+
+User Identity
+
+Timestamps
+
+Capability Gap Records
+
+Proposal Records
+
+Everything must be auditable.
+
+---
+
+# Safety Requirements
+
+Forbidden:
+
+Arbitrary Python execution
+
+Direct shell execution
+
+Credential exposure
+
+Raw AWX execution
+
+Workflow bypass
+
+Unauthorized object changes
+
+The AI may invoke only registered capabilities.
+
+---
+
+# Future Roadmap
+
+Workflow Marketplace
+
+Workflow Recommendation Engine
+
+Failure Root Cause Analysis
+
+Workflow Optimization
+
+Workflow Auto-Documentation
+
+Runbook Generation
+
+ServiceNow Integration
+
+NetBox Integration
+
+Cross-System Investigations
+
+Change Risk Analysis
+
+Autonomous Planning
+
+Human-Governed Execution
+
+---
+
+# Success Criteria
+
+A successful implementation allows users to:
+
+1. Describe outcomes instead of workflows.
+2. Execute automation conversationally.
+3. Chain multiple workflows together.
+4. Understand actions before execution.
+5. Maintain governance and auditability.
+6. Discover automation gaps.
+7. Generate future workflow proposals.
+8. Continuously improve automation coverage.
+
+The AI Assistant is not the automation platform.
+
+The AI Assistant is the operational control plane above the automation platform.
