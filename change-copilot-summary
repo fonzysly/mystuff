@@ -1,0 +1,391 @@
+# Nautobot Change Copilot: Expanded Manager Summary
+
+## Executive Summary
+
+Nautobot Change Copilot is a proposed standalone Nautobot application that uses AI to turn natural-language change requests into governed, evidence-backed network change plans.
+
+The key idea is simple: instead of asking engineers to find the right workflow, fill out the right form, and manually reason through impact, the platform lets them describe the desired outcome in plain language. Change Copilot then discovers relevant infrastructure, reconciles current state, analyzes impact and risk, recommends approved automation, prepares validation and rollback steps, and routes execution through approved systems.
+
+This is not a chatbot product and it is not an autonomous operator. The design is intentionally governance-first:
+
+- AI plans and explains
+- humans approve
+- approved systems execute
+
+That distinction is the foundation of the platform's safety model.
+
+## The Business Problem It Addresses
+
+Today, network change execution is often fragmented and operator-driven:
+
+- engineers must know what automation exists before they can use it
+- planning effort is spread across multiple systems and tribal knowledge
+- impact analysis is inconsistent and often manual
+- approvals happen without a complete, explainable plan
+- gaps in automation are discovered repeatedly but not captured as product demand
+
+Change Copilot is intended to reduce that friction by making the operational workflow intent-driven instead of workflow-driven.
+
+In practical terms, the engineer no longer starts with, "Which workflow should I run?" They start with, "What outcome do I need?" The platform then determines what is affected, what is possible, what is risky, what is missing, and what should happen next.
+
+## What The Product Does
+
+At a high level, Change Copilot accepts a request such as:
+
+"Decommission the Amsterdam branch office"
+
+It then works through a closed operational loop:
+
+1. Discover relevant assets and dependencies from Nautobot and connected systems.
+2. Reconcile intended state, source-of-truth state, and observed live state.
+3. Classify the request into a known intent type.
+4. Recommend one or more existing workflows when they exist.
+5. Build an approval-ready plan with risk, evidence, validation, and rollback.
+6. Ask for approval before any execution occurs.
+7. Hand execution to an approved provider such as Workflow Launcher.
+8. Track status, verify outcomes, and preserve the result for audit and learning.
+
+The output is not just a chat response. It is a governed planning artifact that can include:
+
+- discovery results
+- affected assets
+- dependency and impact analysis
+- risk assessment
+- implementation steps
+- recommended workflows
+- missing inputs
+- validation procedures
+- rollback procedures
+- change request content
+- structured blockers if the request cannot safely proceed
+
+## What Makes It Different
+
+The design makes several strong architectural choices that differentiate it from a generic AI assistant.
+
+### 1. Intent-first, not workflow-first
+
+The primary object in the system is the change intent. The user asks for an operational outcome, not a specific automation path. The platform then determines whether an existing workflow can satisfy that intent.
+
+### 2. Evidence-first planning
+
+The assistant is explicitly designed to prefer structured evidence over model inference. Recommendations are supposed to be backed by resolved Nautobot entities, workflow catalog matches, impact data, reconciliation diffs, approval state, and execution status.
+
+### 3. Governance is built in, not layered on later
+
+The design requires explicit lifecycle states such as observed, classified, planned, awaiting approval, approved, executing, and verified. This prevents the system from implying execution readiness when the underlying state does not support it.
+
+### 4. No hallucinated automation
+
+The AI is not allowed to invent executable actions. If a requested capability does not exist, the system must stop safely and produce one or more of the following instead:
+
+- a manual procedure
+- a workflow proposal for the automation team
+- a capability gap record
+- a structured blocker explaining why execution cannot proceed
+
+### What happens if no workflow exists?
+
+This is an important management point because it shows the platform fails safely rather than pretending unsupported automation exists.
+
+If no existing workflow can satisfy the request, Change Copilot does not execute anything. Instead, it shifts into a governed fallback mode that still provides value:
+
+- it generates a manual procedure with preparation, implementation, validation, rollback, and risk guidance
+- it creates a workflow proposal that the automation team can review and potentially implement later
+- it records a capability gap so repeated unsupported requests become visible backlog demand
+- it returns a structured blocker that explains exactly why the request is not executable today
+
+In short, unsupported requests still produce a useful planning outcome, but never fake an executable one.
+
+### 5. Nautobot remains the source of truth
+
+The platform is anchored in Nautobot as the primary knowledge system for devices, sites, interfaces, prefixes, VLANs, circuits, and relationships. When live state differs from Nautobot, that drift is treated as a planning signal rather than ignored.
+
+## Strategic Value
+
+If implemented well, Change Copilot could create value in five areas.
+
+### Faster planning
+
+It reduces the time engineers spend discovering assets, looking for workflows, gathering context, and drafting plans.
+
+### Safer execution
+
+It requires impact analysis, evidence, and explicit approval before execution, which should reduce avoidable change failures.
+
+### Better automation adoption
+
+Engineers can access automation through natural language instead of needing deep prior knowledge of available workflows.
+
+### Better visibility into automation gaps
+
+Unsupported requests become structured capability gap records, giving the organization a demand-driven backlog for future automation investment.
+
+### Better auditability
+
+The system preserves why a recommendation was made, what evidence supported it, who approved it, what executed, and what the outcome was.
+
+## Core Operating Model
+
+The document repeatedly reinforces a closed-loop operating model:
+
+Discover -> Reconcile -> Classify -> Plan -> Explain -> Approve -> Execute -> Verify -> Learn
+
+This matters because the product is not framed as a conversational interface alone. It is framed as an operational control loop that starts with user intent and ends with a verified, auditable result.
+
+This is a strong product position because it aligns AI with real change-management practice rather than treating LLM output as the final deliverable.
+
+## Safety And Control Model
+
+One of the strongest parts of the proposal is the explicit safety boundary.
+
+The AI must never:
+
+- execute arbitrary code
+- access credentials directly
+- make direct device changes
+- directly launch AWX jobs outside approved paths
+- directly modify Nautobot objects outside approved platform flows
+- bypass Workflow Launcher or other approved providers
+
+This makes the platform easier to govern and easier to explain to security, operations, and leadership stakeholders. The system is positioned as an intelligent planner and orchestrator, not an unsupervised executor.
+
+## Recommended User Experience
+
+The intended UI is closer to an operational planning console than a chatbot window.
+
+The main experience combines three parallel concerns:
+
+- conversational input
+- plan and impact review
+- approval and execution status
+
+The proposed interface includes:
+
+- a conversation area for the operator
+- a separate plan and status rail
+- visibility into risk, duration, missing inputs, and lifecycle state
+- explicit approval controls
+- polling or refresh while asynchronous work is still in progress
+
+This is important because it treats the plan as a first-class object, not merely text in a transcript.
+
+## Architecture Overview
+
+The architecture is layered so each concern can be reasoned about independently.
+
+The major layers are:
+
+- chat interface
+- AI orchestration layer
+- discovery engine
+- knowledge graph
+- impact analysis engine
+- risk engine
+- planning engine
+- workflow recommendation engine
+- approval engine
+- execution providers
+
+The initial execution provider is Workflow Launcher. Future providers could include ServiceNow, AWX, Azure, AWS, and custom integrations.
+
+The architecture also emphasizes normalized provider contracts. That means the planner reasons about capabilities and execution states in a consistent way, rather than depending on the internal details of each provider.
+
+## Relationship To Workflow Launcher
+
+This point is important for leadership alignment: Change Copilot does not replace Workflow Launcher.
+
+Instead:
+
+- Workflow Launcher remains the execution system
+- Workflow Launcher remains responsible for workflow management and orchestration
+- Change Copilot consumes Workflow Launcher metadata and APIs
+- Change Copilot recommends and hands off approved execution to Workflow Launcher
+
+That means Change Copilot is an intelligence and planning layer on top of existing automation, not a competing runner.
+
+## MVP Scope
+
+The document proposes a deliberately narrow MVP that exercises the end-to-end governed loop without trying to solve every use case up front.
+
+### MVP focus areas
+
+- workflow discovery
+- single-workflow execution preparation
+- simple composed plans for a small approved set of intents
+
+### Recommended first supported intents
+
+- create VLAN
+- remove VLAN
+- decommission device
+
+### MVP includes
+
+- chat-driven intake
+- typed intent extraction
+- Nautobot entity resolution
+- capability catalog sync from Workflow Launcher
+- workflow recommendation
+- evidence-backed plan generation
+- explicit lifecycle state transitions
+- structured blockers
+- approval-driven execution through Workflow Launcher
+- execution status synchronization
+- capability gap recording
+
+### MVP excludes
+
+- direct ServiceNow write integration
+- multi-provider orchestration
+- generated configuration deployment
+- advanced graph reasoning
+- learned ranking from execution history
+- complex multi-stage approval policies
+
+This is a sensible scope. It proves the core value proposition without overcommitting early.
+
+## Proposed Data Model
+
+The document is stronger than a concept note because it defines explicit persisted domain objects rather than leaving state inside a prompt or chat transcript.
+
+Key objects include:
+
+- conversation
+- conversation message
+- change intent
+- intent entity
+- capability definition
+- plan
+- plan step
+- capability gap
+
+This is important because it turns the assistant into an auditable application with server-side state, not a thin wrapper over an LLM.
+
+## Planning And Recommendation Logic
+
+The workflow recommendation design is reasonably mature for a greenfield concept.
+
+It proposes a multi-stage pipeline:
+
+1. classify intent
+2. retrieve candidate workflows
+3. extract and resolve entities in Nautobot
+4. let the LLM select among narrowed candidates using structured function-style inputs
+5. score each recommendation for feasibility based on available inputs
+
+That approach is stronger than simple embedding search because it combines semantic retrieval, structured entity resolution, and execution feasibility.
+
+The planning engine then decides whether the request can be handled as:
+
+- a single workflow
+- a composed plan of multiple steps
+- a manual procedure plus workflow proposal and capability gap
+
+This ensures the system remains useful even when automation coverage is incomplete.
+
+## Governance, Audit, And Telemetry
+
+From a management perspective, this is one of the most compelling parts of the design.
+
+The platform is intended to record:
+
+- who triggered an action
+- what changed
+- when it happened
+- what evidence supported it
+- which provider or workflow executed it
+
+It also proposes metrics beyond system uptime, including:
+
+- clarification turns per change
+- recommendation acceptance rate
+- blocked-plan rate
+- approval latency
+- execution latency
+- verification latency
+- token usage per plan
+
+These metrics matter because they allow leadership to measure whether the platform is actually reducing operator effort and improving operational quality.
+
+## Capability Gap Tracking
+
+A notable strategic feature is the capability gap system.
+
+Whenever the user requests something unsupported, the platform records that demand as a structured object instead of losing it in chat history. Over time this becomes a prioritized backlog of automation opportunities based on real user demand.
+
+This turns the assistant into not just an operational interface, but also a sensing mechanism for where the automation program should invest next.
+
+## ServiceNow And Future Integrations
+
+The design positions ServiceNow as a future first-class integration for change-governed workflows, but it keeps the same rule: the AI drafts and recommends, while approved Nautobot jobs perform the actual write operations.
+
+This preserves governance and keeps external-system changes behind approved execution paths.
+
+The document also proposes an LLM provider abstraction so the business logic stays independent of any one model vendor. That is useful for long-term flexibility, cost control, and security posture.
+
+## Why This Proposal Is Strong
+
+From a leadership viewpoint, the proposal is strong because it is not vague about control boundaries.
+
+It clearly defines:
+
+- what the AI is allowed to do
+- what it is not allowed to do
+- where system state lives
+- how plans move through lifecycle states
+- how execution is handed off
+- how unsupported work is captured
+- how success will be measured
+
+That makes it more credible than a generic "AI assistant for operations" idea.
+
+## Key Risks And Execution Challenges
+
+The document is strong conceptually, but a manager should expect several delivery risks.
+
+### 1. Entity resolution quality
+
+The usefulness of the platform depends heavily on accurately resolving sites, devices, VLANs, prefixes, and other identifiers from natural language into Nautobot objects.
+
+### 2. Workflow metadata quality
+
+Workflow recommendation quality depends on the completeness and consistency of metadata coming from Workflow Launcher. Weak metadata will limit recommendation accuracy.
+
+### 3. Reconciliation depth
+
+The design assumes meaningful comparison among intended state, source-of-truth state, and observed live state. Building enough live-state integration to make this valuable may be non-trivial.
+
+### 4. Approval and operational fit
+
+Even a well-designed approval model has to match how teams actually govern changes. The MVP's self-approval assumption is fine for prototyping, but enterprise rollout will require stronger authorization patterns.
+
+### 5. Scope pressure
+
+There is a natural temptation to expand quickly into change generation, risk analytics, ServiceNow, graph reasoning, and broader orchestration. The MVP will only succeed if the team keeps scope narrow until the core loop is proven.
+
+## Recommended Manager Takeaway
+
+The most useful way to describe this initiative to leadership is:
+
+Nautobot Change Copilot is an AI-assisted planning and orchestration layer for governed network changes. It sits on top of Nautobot and Workflow Launcher, uses AI to interpret intent and assemble evidence-backed plans, and only allows execution through approved systems after human approval.
+
+In other words, it is not trying to automate trust away. It is trying to make existing network change processes faster, safer, more explainable, and easier to scale.
+
+## Suggested Presentation Soundbite
+
+"We are proposing an AI-driven planning layer for network changes that lets engineers describe the desired outcome in plain language, then converts that into an evidence-backed, approval-ready plan executed only through approved automation systems. The immediate value is faster planning, better visibility into impact and risk, higher automation adoption, and a measurable backlog of missing capabilities."
+
+## Bottom Line
+
+This document describes a credible greenfield product concept with a strong control model, a practical MVP boundary, and clear strategic value.
+
+If delivered in phases, Change Copilot could become a high-leverage interface for network operations by combining:
+
+- natural-language intent capture
+- source-of-truth-driven planning
+- governed execution
+- operational transparency
+- organizational learning from demand and outcomes
+
+The long-term vision is ambitious, but the MVP is grounded enough to validate whether the product can materially improve the speed, safety, and adoption of network automation inside Nautobot.
