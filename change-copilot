@@ -1,0 +1,2174 @@
+# Nautobot Change Copilot
+
+Version: 1.0
+
+Status: Greenfield Project
+
+---
+
+# Executive Summary
+
+Nautobot Change Copilot is an AI-powered network change planning and execution-orchestration platform built as a standalone Nautobot application.
+
+It is not part of Workflow Launcher.
+
+Workflow Launcher becomes one of several execution and integration providers consumed by Change Copilot.
+
+The primary purpose of Change Copilot is to let network engineers describe intended changes in natural language and receive:
+
+* discovery results
+* impact analysis
+* risk assessment
+* implementation plans
+* automation recommendations
+* workflow execution options
+* configuration recommendations
+* validation procedures
+* rollback procedures
+* change request generation
+
+Change Copilot does not treat chat as the product.
+
+Chat is only the input surface for a governed workflow that classifies intent, gathers evidence, models risk, requests approval, and hands execution to approved systems.
+
+The user describes intent.
+
+The platform engineers the change.
+
+---
+
+# Product Positioning
+
+Traditional Network Automation
+
+Engineer
+
+→ Find automation
+
+→ Fill form
+
+→ Execute automation
+
+Change Copilot
+
+Engineer
+
+→ Describe outcome
+
+→ Gather evidence and reconcile state
+
+→ AI discovers and plans
+
+→ Model risk and approval gates
+
+→ Human reviews and approves
+
+→ Approved systems execute
+
+The system is intent-driven rather than workflow-driven, but every intent is processed through evidence, reconciliation, and approval before execution.
+
+---
+
+# Goals
+
+Change Copilot must allow users to:
+
+* discover existing automation using natural language
+* execute approved workflows conversationally
+* compose multiple workflows into larger operational tasks
+* analyze dependencies and impact before execution
+* explain recommended actions before execution
+* generate validation and rollback procedures
+* detect missing automation capabilities
+* generate workflow proposals for future automation
+* generate or enrich change requests
+* learn organizational automation demand over time
+
+---
+
+# Non-Goals
+
+This project is not:
+
+* a generic chatbot
+* a workflow runner by itself
+* a replacement for Workflow Launcher
+* an autonomous network operator
+* a direct device management platform
+* a system that bypasses governance or approvals
+
+The platform assists engineers.
+
+Humans remain responsible for approvals and execution decisions.
+
+---
+
+# Operating Model
+
+Change Copilot should be understood as a closed operational loop.
+
+The loop is:
+
+Discover
+
+→ Reconcile
+
+→ Classify
+
+→ Plan
+
+→ Explain
+
+→ Approve
+
+→ Execute
+
+→ Verify
+
+→ Learn
+
+Discovery and reconciliation ground the assistant in reality.
+
+Discovery skills collect facts, planning skills shape the proposal, governance skills gate it, execution handoff skills pass it to approved systems, and memory and audit skills preserve what happened.
+
+Classification and planning turn intent into a bounded change proposal.
+
+Explanation and approval make the proposal governable.
+
+Execution and verification make the outcome trustworthy.
+
+Learning preserves useful outcomes without letting prior conversations override current evidence.
+
+---
+
+# Core Principles
+
+## Principle 1
+
+Intent First
+
+The primary object is Change Intent.
+
+Examples:
+
+* decommission site
+* add site
+* upgrade switches
+* replace firewall
+* retire circuit
+* move subnet
+* deploy SD-WAN
+* remove VLAN
+
+Change planning begins with intent.
+
+---
+
+## Principle 2
+
+AI Plans
+
+Humans Approve
+
+Systems Execute
+
+Every action must be backed by a current lifecycle state and at least one evidence object.
+
+The AI must never directly:
+
+* execute Nautobot scripts outside approved platform paths
+* launch AWX jobs directly
+* modify Nautobot objects directly
+* access network devices directly
+* access credentials directly
+* execute arbitrary code
+* bypass Workflow Launcher or other approved providers
+
+The AI plans, analyzes, recommends, and explains.
+
+Execution occurs through approved systems.
+
+---
+
+## Principle 3
+
+Explain Before Execute
+
+Before execution the AI must present:
+
+* selected workflow or workflows
+* required inputs
+* execution sequence
+* expected outcome
+* affected assets
+* dependencies
+* automation coverage
+* risk level
+* estimated duration
+* validation and rollback approach
+* the evidence used to reach the recommendation
+* any structured blocker preventing execution
+
+Execution lifecycle:
+
+Plan
+
+→ Explain
+
+→ Approve
+
+→ Execute
+
+→ Summarize
+
+Plans should move through explicit state transitions and never jump directly from chat input to execution.
+
+---
+
+## Principle 4
+
+Nautobot Is The Source Of Truth
+
+The AI must use Nautobot as the primary knowledge source.
+
+Nautobot contains:
+
+* sites
+* devices
+* interfaces
+* prefixes
+* VLANs
+* VRFs
+* circuits
+* racks
+* relationships
+* custom fields
+* tags
+
+When live state differs from Nautobot, the difference must be represented as a reconciliation signal rather than ignored.
+
+The AI should treat Nautobot as a network knowledge graph.
+
+---
+
+## Principle 5
+
+Workflows Are Tools
+
+Every workflow is exposed to the AI as a callable capability.
+
+The AI consumes a normalized capability catalog built from synced workflow and integration metadata, and every capability should be describable in the same canonical shape.
+
+The AI does not inspect repositories directly to decide what can execute.
+
+Capabilities should be narrow, idempotent when possible, and explicit about inputs, outputs, prerequisites, and risk.
+
+---
+
+## Principle 6
+
+No Hallucinated Automation
+
+The AI must never invent executable actions.
+
+Every executable action must map to an existing workflow, action, or provider capability.
+
+If no capability exists:
+
+* generate a procedure
+* generate a workflow proposal
+* record a capability gap
+* preserve the reason as a structured blocker
+
+Never fabricate execution.
+
+---
+
+## Principle 7
+
+Humans Own Risk
+
+The AI may recommend.
+
+Humans approve.
+
+Approved systems execute.
+
+Risk level influences approval and execution policy, and those policy decisions must be auditable.
+
+---
+
+## Principle 8
+
+Evidence First
+
+The AI should prefer structured evidence over model inference whenever the two conflict.
+
+Evidence should drive:
+
+* recommendation confidence
+* plan completeness
+* execution readiness
+* blocking reasons
+
+If evidence is missing or contradictory, the assistant should ask for clarification or stop at a safer state.
+
+---
+
+# Governance And Evidence Model
+
+Change Copilot should treat every decision as a governed transition, not as a single chat response.
+
+## Lifecycle States
+
+The platform should model work as a finite set of states:
+
+* observed
+* classified
+* planned
+* awaiting approval
+* approved
+* executing
+* verified
+* completed
+* failed
+
+These states must be explicit and queryable.
+
+The assistant should never imply execution readiness unless the current state supports it.
+
+## Evidence Objects
+
+Every recommendation should be backed by structured evidence objects rather than only free-form text.
+
+Examples of evidence objects:
+
+* resolved Nautobot entities
+* impact summaries
+* workflow catalog matches
+* approval history
+* execution status
+* reconciliation diffs
+
+An evidence object should answer one question: what fact justified this step?
+
+## Evidence-First Planning
+
+Plans should be assembled from evidence, then explained to the user.
+
+This keeps the assistant grounded when data is incomplete or contradictory.
+
+If the evidence is weak, the plan should remain incomplete instead of guessing.
+
+## Structured Blocking Reasons
+
+When the assistant cannot proceed, it should record a structured blocker rather than a vague refusal.
+
+Examples:
+
+* missing approval
+* unresolved entity
+* unsupported capability
+* conflicting SoT data
+* insufficient impact confidence
+
+This gives operators a concrete reason to act on.
+
+---
+
+# Reconciliation-First Operation
+
+NetClaw’s strongest architectural pattern is to compare intended state, source-of-truth state, and live state before acting.
+
+Change Copilot should adopt the same posture.
+
+## Three-State View
+
+For any meaningful change, the system should distinguish between:
+
+* intended state
+* source-of-truth state
+* observed live state
+
+Planning quality improves when these are compared explicitly instead of conflated.
+
+## Reconciliation As A Core Flow
+
+The default operating pattern should be:
+
+Discover
+
+→ Compare
+
+→ Explain
+
+→ Approve
+
+→ Execute
+
+→ Verify
+
+→ Summarize
+
+That makes reconciliation part of the product boundary rather than a postscript.
+
+## Hierarchical Diffs
+
+Diffs should be presented in tiers so operators can move from coarse to fine detail.
+
+Suggested hierarchy:
+
+* plan-level summary
+* asset-level impact
+* entity-level mismatch
+* field-level difference
+* execution-level outcome
+
+The assistant should default to the narrowest view that is still actionable.
+
+## Drift Is A Signal
+
+Drift should not be treated as an error condition only.
+
+It is also a planning signal that can indicate:
+
+* stale source-of-truth data
+* missing automation
+* unsafe assumptions
+* out-of-band changes
+
+That makes the platform more operationally honest.
+
+---
+
+# Memory And State Model
+
+The platform should use layered memory rather than one flat conversation history.
+
+## Short-Term State
+
+Short-term state should remain attached to the current conversation and planning session.
+
+It should include:
+
+* current intent
+* collected inputs
+* plan status
+* approval state
+* pending async work
+* current evidence set
+
+## Long-Term Organizational Memory
+
+Long-term memory should store durable facts about the environment and the organization.
+
+Examples:
+
+* repeated change intents
+* common blockers
+* recurring capability gaps
+* known risky assets
+* historical approvals
+* previous execution outcomes
+
+## Raw History And Curated Memory
+
+The design should distinguish between raw session history and curated memory.
+
+Raw history preserves what happened.
+
+Curated memory preserves what is worth reusing.
+
+That distinction prevents the assistant from treating every past conversation as authoritative knowledge.
+
+## Memory Hygiene
+
+Stored memory should be explicit, reviewable, and easy to invalidate.
+
+Old or stale memory must not silently drive future recommendations.
+
+---
+
+# Auditability And Telemetry
+
+Change Copilot should make every important action observable.
+
+## Immutable Audit Trail
+
+Every significant event should be recorded with at least:
+
+* who triggered it
+* what changed
+* when it happened
+* what evidence supported it
+* what provider or workflow acted on it
+
+This should be sufficient to answer why a recommendation or execution happened.
+
+## Decision Telemetry
+
+The product should track the cost of reasoning, not just the cost of execution.
+
+Useful metrics include:
+
+* clarification turns per change
+* recommendation acceptance rate
+* blocked-plan rate
+* approval latency
+* execution latency
+* verification latency
+* token usage per plan
+
+These metrics are design inputs, not just observability extras.
+
+## User-Facing Transparency
+
+The UI should expose meaningful status rather than hiding workflow progress.
+
+Examples:
+
+* waiting on entity resolution
+* waiting on approval
+* waiting on execution provider
+* waiting on verification
+
+That prevents the assistant from feeling magical when it is actually stalled.
+
+---
+
+# Capability Contract Boundary
+
+Change Copilot should treat providers as narrow contracts, not as opaque backends.
+
+## Normalized Capabilities
+
+Each capability should be described in the same canonical shape regardless of provider.
+
+At minimum, a capability should include:
+
+* key
+* title
+* description
+* inputs
+* outputs
+* risk level
+* composability
+* idempotency behavior
+* execution prerequisites
+
+## Read Versus Write Separation
+
+Read operations should remain easy to compose and safe to broaden.
+
+Write operations should remain explicit, constrained, and approval-aware.
+
+This separation keeps the assistant from mixing discovery logic with actuation logic.
+
+## Idempotent Operations
+
+Operations should prefer idempotent behavior when possible.
+
+If a capability already exists or a plan step has already executed, the system should return the existing object or state rather than manufacturing duplicates.
+
+That makes retries and async recovery safer.
+
+## Narrow Provider Responsibilities
+
+Provider-specific behavior should stay behind the contract.
+
+The planner should reason about capabilities and evidence, not about provider internals.
+
+---
+
+# Skill Taxonomy
+
+Change Copilot should borrow NetClaw's skill discipline by exposing a small set of named capability groups rather than one broad assistant surface.
+
+Each skill group should have:
+
+* a narrow purpose
+* explicit preconditions
+* required evidence
+* a clear input and output shape
+* a bounded failure mode
+* a documented handoff to the next group
+
+## Discovery Skills
+
+Purpose:
+
+Collect facts before planning.
+
+Examples:
+
+* intent discovery
+* Nautobot entity lookup
+* live-state reconciliation
+* impact pre-checks
+
+These skills should answer what exists, what changed, and what evidence is trustworthy.
+
+## Planning Skills
+
+Purpose:
+
+Turn intent and evidence into a governable proposal.
+
+Examples:
+
+* intent classification
+* workflow matching
+* impact analysis
+* risk scoring
+* plan synthesis
+
+These skills should stop short of execution and should return blockers when inputs are incomplete.
+
+## Governance Skills
+
+Purpose:
+
+Make the proposal approvable and auditable.
+
+Examples:
+
+* approval routing
+* blocker management
+* evidence summarization
+* change request preparation
+
+These skills should make risk, state, and readiness explicit.
+
+## Execution Handoff Skills
+
+Purpose:
+
+Translate an approved plan into actions for external providers.
+
+Examples:
+
+* Workflow Launcher handoff
+* execution status tracking
+* verification collection
+
+These skills should not invent work; they should only pass through approved steps.
+
+## Memory And Learning Skills
+
+Purpose:
+
+Capture durable knowledge without letting stale conversation history become truth.
+
+Examples:
+
+* capability gap recording
+* outcome summarization
+* organizational memory updates
+
+These skills should separate raw history from curated memory.
+
+## Telemetry And Audit Skills
+
+Purpose:
+
+Make the system explainable after the fact.
+
+Examples:
+
+* decision logging
+* cost tracking
+* approval audit
+* verification timestamps
+
+These skills should support post-change review and operational learning.
+
+## Skill Design Rule
+
+If a skill cannot name its preconditions, evidence, and failure mode, it is too broad.
+
+---
+
+---
+
+# Primary User Stories
+
+## Example 1
+
+User:
+
+"I want to decommission the Amsterdam branch office."
+
+System:
+
+* discovers affected infrastructure
+* builds dependency graph
+* analyzes impact
+* generates implementation plan
+* identifies automation
+* generates missing procedures
+* offers change request creation
+
+---
+
+## Example 2
+
+User:
+
+"Can I safely remove VLAN 250?"
+
+System:
+
+* analyzes dependencies
+* identifies affected systems
+* calculates risk
+* generates recommendation
+* provides impact report
+
+---
+
+## Example 3
+
+User:
+
+"Deploy a new SD-WAN branch in Dallas."
+
+System:
+
+* identifies required resources
+* builds implementation plan
+* suggests workflows
+* generates change request
+* provides validation plan
+
+---
+
+## Example 4
+
+User:
+
+"Use CHG0012345 as the basis for this work."
+
+System:
+
+* reads the change record from ServiceNow
+* extracts implementation context
+* analyzes intent and related configuration items
+* recommends workflows from the capability catalog
+* presents a plan tied to the change record
+
+---
+
+# Capability Maturity Levels
+
+The platform should be designed to support four maturity levels.
+
+## Level 1
+
+Discovery
+
+Purpose:
+
+Find existing workflows, runbooks, and supported execution paths.
+
+No execution occurs.
+
+---
+
+## Level 2
+
+Conversational Execution Preparation
+
+Purpose:
+
+Select an existing workflow, extract known inputs, collect missing inputs, and prepare an approval-ready plan.
+
+Execution occurs only after approval.
+
+---
+
+## Level 3
+
+Composed Change Planning
+
+Purpose:
+
+Combine multiple workflows and manual procedures into a larger implementation plan represented as a dependency-aware graph.
+
+---
+
+## Level 4
+
+Capability Gap Detection And Proposal Generation
+
+Purpose:
+
+Detect unsupported change intents, generate procedures and workflow proposals, and record demand for future automation investment.
+
+---
+
+# High-Level Architecture
+
+The operating model decomposes into a set of cooperating layers that move from discovery to execution and back into verification and learning.
+
+User
+
+↓
+
+Chat Interface
+
+↓
+
+AI Orchestration Layer
+
+↓
+
+Discovery Engine
+
+↓
+
+Knowledge Graph
+
+↓
+
+Impact Analysis Engine
+
+↓
+
+Risk Engine
+
+↓
+
+Planning Engine
+
+↓
+
+Workflow Recommendation Engine
+
+↓
+
+Approval Engine
+
+↓
+
+Execution Providers
+
+Initial Execution Providers:
+
+* Workflow Launcher
+
+Future Providers:
+
+* ServiceNow
+* AWX
+* Azure
+* AWS
+* custom integrations
+
+---
+
+# Functional Architecture
+
+These layers are intentionally narrow so each one can be reasoned about, tested, and governed independently.
+
+## Discovery Engine
+
+Purpose:
+
+Understand the environment before planning.
+
+Discovery gathers information such as:
+
+* sites
+* devices
+* interfaces
+* prefixes
+* VLANs
+* circuits
+* cloud dependencies
+* monitoring dependencies
+* DNS dependencies
+* backup dependencies
+
+Discovery always occurs before planning.
+
+---
+
+## Knowledge Graph
+
+Purpose:
+
+Create relationship awareness.
+
+Examples:
+
+Site
+
+→ Devices
+
+Device
+
+→ Interfaces
+
+Interface
+
+→ VLANs
+
+Device
+
+→ Monitoring
+
+Device
+
+→ Backups
+
+Circuit
+
+→ Provider
+
+Prefix
+
+→ VRF
+
+Relationships become graph objects.
+
+The AI reasons using graph relationships.
+
+---
+
+## Impact Analysis Engine
+
+Purpose:
+
+Determine change impact.
+
+Example:
+
+Delete VLAN 250
+
+Affected:
+
+* 18 switches
+* 4 firewalls
+* 145 endpoints
+* 3 DHCP scopes
+* 2 firewall policies
+
+Outputs:
+
+* impact report
+* affected assets
+* dependency analysis
+* recommendations
+
+Impact analysis should be mandatory for material changes.
+
+---
+
+## Risk Engine
+
+Purpose:
+
+Calculate risk.
+
+Risk factors include:
+
+* affected users
+* affected devices
+* affected applications
+* affected circuits
+* historical failures
+* workflow confidence
+* automation coverage
+
+Outputs:
+
+* low
+* medium
+* high
+* critical
+
+Risk influences approval requirements and suggested change type.
+
+---
+
+## Workflow Recommendation Engine
+
+Purpose:
+
+Determine which workflows best satisfy user intent.
+
+The engine must not rely on a single matching approach.
+
+Recommendation stages:
+
+### Stage 1: Intent Classification
+
+Classify the request into a broad operational category before matching specific workflows.
+
+Categories may include:
+
+* provisioning
+* decommissioning
+* troubleshooting
+* auditing
+* change management
+* migration
+* maintenance
+
+Only relevant workflows proceed to the next stage.
+
+### Stage 2: Candidate Retrieval
+
+Use embedding similarity to narrow the capability catalog.
+
+Compare the user message against workflow descriptions, aliases, examples, and tags.
+
+For small catalogs this stage may pass all workflows.
+
+For large catalogs this stage is required.
+
+### Stage 3: Entity Extraction And Nautobot Lookup
+
+Extract and resolve entities such as:
+
+* device names
+* site names
+* IP addresses
+* platform references
+* tenant references
+* change numbers
+
+Resolved entity properties are used to filter or boost candidates.
+
+### Stage 4: LLM Selection Via Function Calling
+
+Expose the narrowed candidate workflows to the LLM using structured tool or function calling.
+
+Each workflow function must include:
+
+* workflow key
+* description
+* aliases
+* examples
+* required inputs
+* input types and constraints
+
+The model selects the best workflow or workflows using structured output.
+
+### Stage 5: Input Feasibility Scoring
+
+Score each recommended workflow by how well the current context satisfies required inputs.
+
+Ranking should combine confidence and feasibility.
+
+### Recommendation Output
+
+Each recommendation must include:
+
+* selected workflow key
+* confidence score
+* reason for selection
+* detected inputs
+* missing inputs
+* feasibility score
+* risk level
+
+Deferred enhancements:
+
+* execution history patterns
+* prerequisite awareness
+* negative examples and exclusion rules
+* multi-signal confidence fusion
+* workflow similarity graph
+
+---
+
+## Planning Engine
+
+Purpose:
+
+Convert intent into implementation plans.
+
+The planner determines:
+
+* can a single workflow satisfy the request?
+* if not, can multiple workflows satisfy the request?
+* if not, can a procedural plan still be produced?
+
+Decision tree:
+
+Intent
+
+↓
+
+Single workflow?
+
+↓
+
+Yes → execution-ready plan
+
+↓
+
+No
+
+↓
+
+Composable plan?
+
+↓
+
+Yes → composed plan
+
+↓
+
+No
+
+↓
+
+Procedure + proposal + capability gap
+
+Plans must be explainable.
+
+---
+
+## Procedure Generation Engine
+
+Purpose:
+
+Remain useful even when no automation exists.
+
+The AI should generate:
+
+* preparation steps
+* implementation steps
+* validation steps
+* rollback steps
+* risk assessment
+* dependencies
+
+This capability is required.
+
+---
+
+## Configuration Recommendation Engine
+
+Purpose:
+
+Generate implementation examples.
+
+Examples:
+
+* switch configurations
+* firewall rules
+* BGP changes
+* VLAN changes
+* routing policies
+
+All generated configurations must be labeled:
+
+PROPOSED CONFIGURATION
+
+Human Review Required
+
+Generated configurations must never be automatically deployed.
+
+---
+
+## Validation Engine
+
+Purpose:
+
+Define success criteria.
+
+Examples:
+
+* BGP established
+* routes present
+* device reachable
+* application reachable
+* monitoring healthy
+
+Validation should be generated automatically.
+
+---
+
+## Change Request Engine
+
+Purpose:
+
+Generate change requests and enrich governed execution.
+
+Outputs may include:
+
+* business justification
+* scope
+* affected assets
+* implementation plan
+* validation plan
+* rollback plan
+* risk assessment
+
+Future capabilities include automatic change submission through approved integrations.
+
+---
+
+# Execution Plans
+
+Execution plans should be represented as DAGs.
+
+Example:
+
+backup_device
+
+↓
+
+remove_monitoring
+
+↓
+
+remove_dns
+
+↓
+
+remove_nautobot_record
+
+Future capabilities:
+
+* parallel execution
+* rollback plans
+* dependency resolution
+* conditional execution
+
+AI-triggered execution must reuse the existing execution path of the target provider.
+
+Workflow Launcher should call the same execution entry point used by its normal launch flow.
+
+Execution records should capture whether a run originated from a form UI, API, or AI conversation.
+
+---
+
+# Approval Framework
+
+All execution plans must persist approval state and approval history.
+
+States:
+
+* draft
+* pending
+* approved
+* rejected
+* executing
+* completed
+* failed
+
+Only approved plans may execute.
+
+Initial implementation may use self-approval only.
+
+Future implementations may introduce role-based approvals by risk level.
+
+---
+
+# Capability Gap System
+
+Capability gaps are a first-class feature.
+
+Every unsupported request should create a capability gap record.
+
+Suggested model:
+
+CapabilityGap
+
+Fields:
+
+* id
+* requested_by
+* request_text
+* capability_name
+* frequency
+* first_seen
+* last_seen
+* status
+
+Status values:
+
+* new
+* under_review
+* planned
+* implemented
+* rejected
+
+This becomes an automation backlog and demand signal.
+
+---
+
+# Workflow Proposal Engine
+
+When no workflow exists, the AI should generate a non-executable workflow proposal.
+
+Example output:
+
+Workflow name:
+
+rotate_f5_admin_password
+
+Inputs:
+
+* device_group
+* password
+
+Actions:
+
+* backup_config
+* update_password
+* verify_login
+
+The proposal is never executable by itself.
+
+It becomes a candidate workflow for the automation team.
+
+---
+
+# Data And State Model
+
+The platform should persist state server-side and never rely solely on model memory.
+
+Initial persisted concepts should include:
+
+* conversation
+* conversation message
+* change intent
+* discovered entities
+* recommendation set
+* execution plan
+* approval history
+* workflow proposal
+* capability gap
+* external reference such as change number
+
+Conversation context should retain values such as:
+
+* inferred parameters
+* previously supplied inputs
+* selected workflows
+* approval state
+* related change records
+
+---
+
+# API Design
+
+Follow Nautobot REST API conventions and reuse existing Nautobot authentication and permission patterns.
+
+Initial Change Copilot endpoints:
+
+* GET /api/plugins/change-copilot/catalog
+* POST /api/plugins/change-copilot/conversations
+* GET /api/plugins/change-copilot/conversations
+* GET /api/plugins/change-copilot/conversations/<id>
+* POST /api/plugins/change-copilot/conversations/<id>/messages
+* POST /api/plugins/change-copilot/conversations/<id>/approve
+* GET /api/plugins/change-copilot/gaps
+* GET /api/plugins/change-copilot/metrics
+
+Purpose:
+
+* expose AI-friendly capability metadata
+* persist and resume conversations
+* support approval workflows
+* expose capability-gap workflows
+* expose operational metrics
+
+The API should be reusable by future UI surfaces such as Slack or Teams integrations.
+
+---
+
+# Plugin Structure
+
+Repository:
+
+nautobot-app-change-copilot
+
+Suggested package layout:
+
+change_copilot/
+
+```text
+ai/
+chat/
+discovery/
+planning/
+impact/
+risk/
+workflows/
+changerequests/
+integrations/
+providers/
+memory/
+knowledge_graph/
+approvals/
+rag/
+models/
+api/
+jobs/
+```
+
+---
+
+# MVP Architecture
+
+The initial release should implement a narrow operational core rather than the full target architecture.
+
+The MVP is the smallest complete slice of the same governed loop: discover, reconcile, classify, plan, explain, approve, execute, verify, and learn.
+
+In MVP terms, that means one narrow path through discovery skills, planning skills, governance skills, and execution handoff skills, with memory and telemetry capturing the outcome.
+
+## Phase 1 Scope
+
+The MVP should support three intent families only:
+
+* workflow discovery
+* single-workflow execution preparation
+* simple composed plans for a small approved set of intents
+
+Recommended first supported intents:
+
+* remove VLAN
+* decommission device
+* create VLAN
+
+These intents are constrained enough to validate the architecture while still exercising discovery, entity resolution, planning, approval, and execution-provider integration.
+
+## MVP System Boundary
+
+The MVP should include:
+
+* chat-driven request intake
+* typed intent extraction
+* Nautobot entity resolution
+* workflow recommendation from Workflow Launcher metadata
+* server-side conversation state
+* evidence-backed plan generation
+* explicit lifecycle state transitions
+* structured blocker recording when the plan cannot proceed
+* plan execution through Workflow Launcher only
+* execution status synchronization back into the conversation
+* capability gap recording when no supported workflow exists
+
+The MVP should not include:
+
+* ServiceNow write integration
+* multi-provider execution orchestration
+* generated device configuration deployment
+* advanced graph reasoning
+* learned ranking from historical outcomes
+* multi-stage organizational approvals
+* free-form execution without evidence or state transitions
+
+## MVP Runtime Components
+
+The first release can be implemented with these concrete components:
+
+* Chat API: accepts messages and returns the current conversation, extracted intent, recommendations, and plan state.
+* Intent Service: classifies the request into a supported intent type and extracts structured parameters.
+* Entity Resolver: resolves devices, sites, VLANs, prefixes, and change references against Nautobot.
+* Capability Catalog Sync: normalizes Workflow Launcher workflow metadata into a local searchable catalog.
+* Recommendation Service: ranks candidate workflows using catalog metadata, resolved entities, and LLM structured selection.
+* Plan Builder: produces a typed plan with manual and executable steps, evidence links, and blockers.
+* Approval Service: transitions plans through draft, pending, approved, and rejected states.
+* Workflow Launcher Adapter: launches approved workflows and polls for execution status.
+* Capability Gap Recorder: stores unsupported intents and missing automation requests.
+
+## MVP Domain Model
+
+The MVP should define explicit typed models rather than storing only free-form chat state.
+
+### Conversation
+
+Purpose:
+
+Represents a user session and its current planning state.
+
+Suggested fields:
+
+* id
+* created_by
+* status
+* lifecycle_state
+* active_intent_id
+* current_plan_id
+* current_change_reference
+* current_evidence_set
+* blocker_summary
+* pending_async_work
+* created_at
+* updated_at
+
+### ConversationMessage
+
+Purpose:
+
+Stores user, assistant, and system messages tied to a conversation.
+
+Suggested fields:
+
+* id
+* conversation_id
+* role
+* message_type
+* content
+* structured_payload
+* evidence_payload
+* created_at
+
+### ChangeIntent
+
+Purpose:
+
+Represents the normalized operational request extracted from conversation text.
+
+Suggested fields:
+
+* id
+* conversation_id
+* intent_type
+* target_type
+* target_value
+* summary
+* confidence
+* execution_readiness
+* blocker_reason
+* source_message_id
+* created_at
+
+Recommended MVP intent types:
+
+* discover_workflow
+* create_vlan
+* remove_vlan
+* decommission_device
+
+### IntentEntity
+
+Purpose:
+
+Tracks extracted entities and their Nautobot resolution status.
+
+Suggested fields:
+
+* id
+* change_intent_id
+* entity_type
+* raw_value
+* resolved_object_type
+* resolved_object_id
+* resolution_confidence
+* resolution_status
+
+### CapabilityDefinition
+
+Purpose:
+
+Stores normalized workflow metadata imported from Workflow Launcher.
+
+Suggested fields:
+
+* id
+* provider_name
+* provider_capability_id
+* key
+* title
+* description
+* category
+* aliases_json
+* examples_json
+* required_inputs_json
+* risk_level
+* estimated_runtime_minutes
+* composable
+* enabled
+* idempotent
+* prerequisites_json
+* last_synced_at
+
+### Plan
+
+Purpose:
+
+Represents the approval and execution unit for the current conversation.
+
+Suggested fields:
+
+* id
+* conversation_id
+* change_intent_id
+* status
+* lifecycle_state
+* plan_type
+* risk_level
+* explanation
+* evidence_json
+* blocker_reason
+* missing_inputs_json
+* affected_assets_json
+* validation_summary
+* rollback_summary
+* approved_by
+* approved_at
+* created_at
+* updated_at
+
+Recommended MVP plan types:
+
+* recommendation_only
+* single_workflow
+* simple_composed
+* manual_procedure
+
+### PlanStep
+
+Purpose:
+
+Represents an ordered or dependency-linked step in a plan.
+
+Suggested fields:
+
+* id
+* plan_id
+* step_key
+* step_type
+* title
+* description
+* depends_on_json
+* capability_definition_id
+* inputs_json
+* execution_status
+* execution_reference
+* evidence_json
+* blocker_reason
+* sort_order
+
+Recommended MVP step types:
+
+* manual
+* workflow
+* validation
+
+### CapabilityGap
+
+Purpose:
+
+Captures unsupported requests and planning dead ends.
+
+Suggested fields:
+
+* id
+* requested_by
+* request_text
+* inferred_intent_type
+* capability_name
+* frequency
+* first_seen
+* last_seen
+* status
+
+## MVP Provider Contracts
+
+The planner should depend on provider contracts rather than provider-specific logic.
+
+### CatalogProvider
+
+Responsibilities:
+
+* list capabilities
+* retrieve capability schema
+* expose provider health
+
+Normalized output should include:
+
+* capability key
+* title and description
+* aliases and examples
+* required inputs and types
+* risk level
+* composable flag
+* idempotency behavior
+* prerequisites
+
+### ExecutionProvider
+
+Responsibilities:
+
+* validate plan step executability
+* launch execution for an approved workflow step
+* retrieve execution status
+* retrieve execution summary
+* return structured blockers when a step cannot execute
+
+Normalized execution states should be:
+
+* pending
+* queued
+* running
+* succeeded
+* failed
+* canceled
+
+The Workflow Launcher adapter should implement both provider contracts in the MVP.
+
+## MVP API Surface
+
+The current API section defines the broad surface. The MVP should implement the subset below first.
+
+### Conversations
+
+* POST /api/plugins/change-copilot/conversations
+* GET /api/plugins/change-copilot/conversations/<id>
+* POST /api/plugins/change-copilot/conversations/<id>/messages
+
+Expected behavior:
+
+* create a conversation
+* accept a user message
+* run intent extraction and entity resolution
+* return updated conversation state, evidence, recommendations, blockers, and current plan snapshot
+
+### Plans
+
+* GET /api/plugins/change-copilot/conversations/<id>/plan
+* POST /api/plugins/change-copilot/conversations/<id>/approve
+
+Expected behavior:
+
+* return the current approval-ready plan and its evidence set
+* record explicit approval
+* trigger execution only when the current plan is executable and complete
+
+### Catalog
+
+* GET /api/plugins/change-copilot/catalog
+* POST /api/plugins/change-copilot/catalog/sync
+
+Expected behavior:
+
+* expose normalized workflow metadata
+* refresh the local capability catalog from Workflow Launcher
+
+### Gaps
+
+* GET /api/plugins/change-copilot/gaps
+
+Expected behavior:
+
+* expose unsupported intent demand for operators and automation teams
+
+## MVP End-To-End Flow
+
+For a request such as "Remove VLAN 250 from Amsterdam":
+
+1. The user sends a chat message.
+2. The Conversation enters `observed` and `classified` states.
+3. The Intent Service classifies the request as `remove_vlan`.
+4. The Entity Resolver resolves `Amsterdam` to a Nautobot site and `250` to a VLAN candidate set.
+5. The Recommendation Service ranks candidate workflows from the local capability catalog.
+6. The Plan Builder creates either a `single_workflow` or `simple_composed` plan with evidence and blockers.
+7. The plan is returned with missing inputs, risk, validation notes, and rollback notes.
+8. The user supplies missing data or approves the plan.
+9. The Approval Service marks the plan approved and the conversation enters `approved`.
+10. The Workflow Launcher Adapter launches each executable step.
+11. Execution status and summaries are written back into plan steps, conversation messages, and evidence.
+
+## MVP Success Metrics
+
+The first release should be evaluated with concrete operational metrics:
+
+* intent classification accuracy for supported intents
+* entity resolution success rate
+* workflow recommendation acceptance rate
+* average clarification turns before a plan becomes approval-ready
+* percent of approved plans that execute without manual correction
+* percent of unsupported requests correctly recorded as capability gaps
+
+---
+
+# Workflow Launcher Integration
+
+Workflow Launcher is an execution provider and capability source.
+
+Workflow Launcher remains responsible for:
+
+* workflow execution
+* AWX integration
+* automation orchestration
+* execution logging
+* approvals within its own domain
+* workflow management
+
+Change Copilot consumes Workflow Launcher APIs.
+
+Change Copilot must not directly execute AWX jobs.
+
+Required integration capabilities:
+
+* workflow search
+* workflow metadata
+* workflow inputs and schema
+* workflow execution
+* workflow status
+* workflow history
+
+---
+
+# Workflow Metadata Enhancements
+
+Execution providers such as Workflow Launcher should support an optional AI metadata block.
+
+Example:
+
+```yaml
+name: create_vlan
+description: Create VLAN
+ai:
+	category: switching
+	aliases:
+		- add vlan
+		- create vlan
+		- provision vlan
+	examples:
+		- Create VLAN 150 in Amsterdam
+		- Add VLAN 200 to Singapore
+	tags:
+		- switching
+		- provisioning
+	risk_level: medium
+	estimated_runtime_minutes: 5
+	composable: true
+```
+
+All AI metadata fields should remain optional.
+
+Workflows without the block remain discoverable by name and description.
+
+Purpose:
+
+* improve workflow selection
+* improve composition
+* improve planning quality
+* support future ranking and retrieval
+
+---
+
+# ServiceNow Integration
+
+ServiceNow is a first-class integration for change-governed workflows.
+
+## Connection Model
+
+Use Nautobot ExternalIntegration for ServiceNow connectivity, credentials, and job mapping.
+
+The ExternalIntegration extra_config JSON field stores the mapping of Change Copilot actions to Nautobot job class paths.
+
+Example:
+
+```json
+{
+	"change_copilot": {
+		"create_change_job": "my_plugin.jobs.CreateServiceNowChange",
+		"update_change_job": "my_plugin.jobs.UpdateServiceNowChange",
+		"close_change_job": "my_plugin.jobs.CloseServiceNowChange"
+	}
+}
+```
+
+Each value is a fully qualified Nautobot Job class path.
+
+Any action key may be null or absent if unsupported.
+
+## Read Access
+
+The AI may read existing ServiceNow change records using the configured integration credentials.
+
+This may include:
+
+* implementation plans
+* change descriptions
+* risk and impact assessments
+* implementation windows
+* assignment groups
+* related configuration items
+* change state
+
+The AI uses this for planning context and workflow discovery.
+
+Before recommending execution, the AI validates that the change is in an appropriate state for implementation.
+
+## Write Access
+
+The AI must never create or modify ServiceNow records directly.
+
+All ServiceNow write operations must go through configured Nautobot jobs.
+
+Supported lifecycle operations:
+
+* create change
+* update change
+* close change
+
+The AI drafts payloads for review, then triggers the configured job only after explicit confirmation.
+
+## Failure Handling
+
+If ServiceNow is unavailable:
+
+* the AI informs the user
+* workflow planning and execution can continue without ServiceNow
+* unrelated conversation flow remains functional
+
+If a configured job is missing:
+
+* the AI reports which specific action is unavailable
+* the AI does not block unrelated operations
+
+---
+
+# Retrieval-Augmented Generation
+
+RAG is required.
+
+Never rely exclusively on prompts.
+
+Phase 1 sources:
+
+* Nautobot data
+* capability catalog
+* workflow documentation
+* workflow schemas
+
+Phase 2 sources:
+
+* execution history
+* operational documentation
+* runbooks
+* internal knowledge
+* change records
+
+Initial storage:
+
+* in-memory embeddings recomputed on sync
+
+Preferred storage as scale increases:
+
+* PostgreSQL pgvector
+
+Future direction:
+
+* graph RAG
+* knowledge graph retrieval
+
+---
+
+# LLM Provider Layer
+
+Create a provider abstraction.
+
+Connection model:
+
+Use Nautobot ExternalIntegration records for LLM connectivity and provider-specific configuration.
+
+Plugin configuration selects which ExternalIntegration record is used for each AI role.
+
+Initial roles:
+
+* planner_llm_integration
+* summarizer_llm_integration
+* embedding_llm_integration
+
+Initial implementations may point all roles to the same integration.
+
+Example plugin settings:
+
+```python
+planner_llm_integration = "OpenAI Primary"
+summarizer_llm_integration = "OpenAI Primary"
+embedding_llm_integration = "OpenAI Primary"
+```
+
+Example ExternalIntegration extra_config:
+
+```json
+{
+	"provider": "openai",
+	"model": "gpt-4.1",
+	"api_base": "https://api.openai.com/v1",
+	"temperature": 0.2,
+	"max_tokens": 4000,
+	"supports_json_mode": true
+}
+```
+
+Supported providers:
+
+* OpenAI
+* Anthropic
+* Azure OpenAI
+* Ollama
+* vLLM
+* future local models
+
+Business logic must remain provider-independent.
+
+The browser must never communicate with the LLM provider directly.
+
+All model interactions occur server-side through Nautobot.
+
+Credentials must be managed through Nautobot secrets, ExternalIntegration configuration, or other secure configuration.
+
+---
+
+# UI Experience
+
+The assistant experience should feel like an operational planning console rather than a default CRUD form.
+
+The UI must support three simultaneous jobs:
+
+* conversational input
+* plan and impact review
+* approval and governance actions
+
+The primary page should present:
+
+* a clear hero area explaining the assistant boundary and value
+* a conversation history rail scoped to the current user
+* a chat stage with distinct operator and assistant message treatment
+* a dedicated plan and status rail showing risk, duration, missing inputs, change state, and execution status
+* prominent approval and change action controls
+
+The UI should prioritize:
+
+* fast operator scanning
+* strong visual separation between chat and plan state
+* explicit execution readiness signals
+* clear communication when background model work is still running
+
+Because ranking, impact analysis, and execution summarization may complete asynchronously, the UI should automatically refresh the active conversation while work is pending.
+
+This refresh behavior must:
+
+* remain lightweight
+* poll only while the active conversation has pending async tasks
+* stop when the conversation becomes stable
+* avoid requiring a manual refresh
+
+Implementation note:
+
+The UI should live in dedicated static CSS and JavaScript assets rather than a large inline template block.
+
+---
+
+# Explainability Requirements
+
+Every recommendation or plan must include:
+
+* why it was recommended
+* confidence
+* risk
+* dependencies
+* expected outcome
+* affected assets
+* automation coverage
+
+The AI must explain itself in operational language.
+
+---
+
+# Safety Requirements
+
+Forbidden:
+
+* direct device changes
+* credential access
+* arbitrary shell execution
+* arbitrary Python execution
+* workflow bypass
+* unauthorized changes
+
+The AI plans.
+
+Humans approve.
+
+Systems execute.
+
+---
+
+# Delivery Phases
+
+## Phase 1
+
+* standalone Nautobot app scaffold
+* conversational discovery
+* workflow recommendation
+* server-side conversation memory
+* Workflow Launcher integration
+* approval-ready execution plans
+* capability gap recording
+
+## Phase 2
+
+* impact analysis and risk scoring
+* procedure generation
+* ServiceNow integration
+* change request drafting
+* richer RAG sources
+
+## Phase 3
+
+* deeper knowledge graph reasoning
+* additional execution providers
+* graph-aware retrieval
+* advanced approval policies
+* learning from execution history
+
+---
+
+# Success Criteria
+
+The platform succeeds when engineers can:
+
+* understand change impact before execution
+* discover available automation automatically
+* generate implementation plans rapidly
+* reduce failed changes
+* generate high-quality change requests
+* increase automation adoption
+* reduce manual analysis effort
+* safely execute infrastructure changes through approved systems
+* use a unified AI-driven operational interface for network engineering
+
+---
+
+# Long-Term Vision
+
+Change Copilot becomes the primary operational interface for network engineering.
+
+Future user experience:
+
+User:
+
+"I want to retire the Amsterdam office."
+
+Platform:
+
+* discovers infrastructure
+* calculates impact
+* identifies dependencies
+* builds implementation plan
+* finds automation
+* generates missing procedures
+* creates change request
+* executes approved automation
+* validates results
+* generates closure report
+
+The engineer describes intent.
+
+The platform engineers the change.
