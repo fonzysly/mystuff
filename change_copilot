@@ -1,0 +1,974 @@
+# CLAUDE.md
+
+# Nautobot Change Copilot
+
+Version: 1.0
+
+Status: Greenfield Project
+
+---
+
+# Executive Summary
+
+Nautobot Change Copilot is an AI-powered network change planning and automation platform.
+
+It is a standalone Nautobot application.
+
+It is NOT part of Workflow Launcher.
+
+Workflow Launcher becomes one of several integrations used by Change Copilot.
+
+The primary purpose of Change Copilot is to allow network engineers to describe intended changes in natural language and receive:
+
+* Discovery results
+* Impact analysis
+* Risk assessment
+* Change plans
+* Automation recommendations
+* Workflow execution options
+* Configuration recommendations
+* Validation procedures
+* Rollback procedures
+* Change request generation
+
+The user describes intent.
+
+The platform engineers the change.
+
+---
+
+# Product Philosophy
+
+Traditional Network Automation
+
+Engineer
+
+↓
+
+Find Automation
+
+↓
+
+Execute Automation
+
+Change Copilot
+
+Engineer
+
+↓
+
+Describe Outcome
+
+↓
+
+AI Plans Change
+
+↓
+
+Engineer Approves
+
+↓
+
+Automation Executes
+
+The system is intent-driven rather than workflow-driven.
+
+---
+
+# Non-Goals
+
+This project is NOT:
+
+* A chatbot
+* A workflow runner
+* A replacement for Workflow Launcher
+* An autonomous network operator
+* A direct device management platform
+
+The platform assists engineers.
+
+Humans remain responsible for approvals and execution decisions.
+
+---
+
+# Primary User Stories
+
+Example 1
+
+User:
+
+"I want to decommission the Amsterdam branch office."
+
+System:
+
+Discovers affected infrastructure
+
+Builds dependency graph
+
+Analyzes impact
+
+Generates implementation plan
+
+Identifies automation
+
+Generates missing procedures
+
+Offers change request creation
+
+---
+
+Example 2
+
+User:
+
+"Can I safely remove VLAN 250?"
+
+System:
+
+Analyzes dependencies
+
+Identifies affected systems
+
+Calculates risk
+
+Generates recommendation
+
+Provides impact report
+
+---
+
+Example 3
+
+User:
+
+"Deploy a new SD-WAN branch in Dallas."
+
+System:
+
+Identifies required resources
+
+Builds implementation plan
+
+Suggests workflows
+
+Generates change request
+
+Provides validation plan
+
+---
+
+# Architectural Principles
+
+## Principle 1
+
+Intent First
+
+The primary object is Change Intent.
+
+Examples:
+
+Decommission Site
+
+Add Site
+
+Upgrade Switches
+
+Replace Firewall
+
+Retire Circuit
+
+Move Subnet
+
+Deploy SD-WAN
+
+Remove VLAN
+
+Change planning begins with intent.
+
+---
+
+## Principle 2
+
+AI Plans
+
+Humans Approve
+
+Systems Execute
+
+The AI never directly changes infrastructure.
+
+The AI:
+
+Plans
+
+Analyzes
+
+Recommends
+
+Explains
+
+Execution occurs through approved systems.
+
+---
+
+## Principle 3
+
+Nautobot Is The Source Of Truth
+
+The AI must use Nautobot as the primary knowledge source.
+
+Nautobot contains:
+
+Sites
+
+Devices
+
+Interfaces
+
+Prefixes
+
+VLANs
+
+VRFs
+
+Circuits
+
+Racks
+
+Relationships
+
+Custom Fields
+
+Tags
+
+The AI should treat Nautobot as a network knowledge graph.
+
+---
+
+## Principle 4
+
+Workflow Launcher Is A Dependency
+
+Workflow Launcher remains responsible for:
+
+Workflow execution
+
+AWX integration
+
+Automation orchestration
+
+Execution logging
+
+Approvals
+
+Workflow management
+
+Change Copilot consumes Workflow Launcher APIs.
+
+Change Copilot does not replace Workflow Launcher.
+
+---
+
+# High-Level Architecture
+
+User
+
+↓
+
+Chat Interface
+
+↓
+
+AI Orchestration Layer
+
+↓
+
+Discovery Engine
+
+↓
+
+Knowledge Graph
+
+↓
+
+Impact Analysis Engine
+
+↓
+
+Planning Engine
+
+↓
+
+Workflow Matching Engine
+
+↓
+
+Approval Engine
+
+↓
+
+Execution Providers
+
+Execution Providers:
+
+Workflow Launcher
+
+Future Providers:
+
+ServiceNow
+
+AWX
+
+Azure
+
+AWS
+
+Custom Integrations
+
+---
+
+# Plugin Structure
+
+Create a new Nautobot application.
+
+Repository:
+
+nautobot-app-change-copilot
+
+Suggested Package Layout:
+
+change_copilot/
+
+```
+ai/
+
+chat/
+
+discovery/
+
+planning/
+
+impact/
+
+risk/
+
+workflows/
+
+changerequests/
+
+integrations/
+
+providers/
+
+memory/
+
+knowledge_graph/
+
+approvals/
+
+rag/
+
+models/
+
+api/
+
+jobs/
+```
+
+---
+
+# Discovery Engine
+
+Purpose:
+
+Understand the environment.
+
+The discovery engine gathers information before planning.
+
+Example:
+
+User:
+
+"Decommission Amsterdam"
+
+Discovery:
+
+Site
+
+Devices
+
+Interfaces
+
+Prefixes
+
+VLANs
+
+Circuits
+
+Cloud Dependencies
+
+Monitoring Dependencies
+
+DNS Dependencies
+
+Backup Dependencies
+
+Discovery always occurs before planning.
+
+---
+
+# Knowledge Graph
+
+Purpose:
+
+Create relationship awareness.
+
+Examples:
+
+Site
+
+→ Devices
+
+Device
+
+→ Interfaces
+
+Interface
+
+→ VLANs
+
+Device
+
+→ Monitoring
+
+Device
+
+→ Backups
+
+Circuit
+
+→ Provider
+
+Prefix
+
+→ VRF
+
+Relationships become graph objects.
+
+The AI reasons using graph relationships.
+
+---
+
+# Impact Analysis Engine
+
+Purpose:
+
+Determine change impact.
+
+Example:
+
+Delete VLAN 250
+
+Affected:
+
+18 switches
+
+4 firewalls
+
+145 endpoints
+
+3 DHCP scopes
+
+2 firewall policies
+
+Outputs:
+
+Impact Report
+
+Affected Assets
+
+Risk Assessment
+
+Dependencies
+
+Recommendations
+
+Impact analysis should be mandatory.
+
+---
+
+# Risk Engine
+
+Purpose:
+
+Calculate risk.
+
+Factors:
+
+Affected Users
+
+Affected Devices
+
+Affected Applications
+
+Affected Circuits
+
+Historical Failures
+
+Workflow Confidence
+
+Automation Coverage
+
+Outputs:
+
+Low
+
+Medium
+
+High
+
+Critical
+
+Risk influences approval requirements.
+
+---
+
+# Planning Engine
+
+Purpose:
+
+Convert intent into implementation plans.
+
+Example:
+
+Intent
+
+Decommission Site
+
+Generated Plan
+
+Validate Site Inactivity
+
+Backup Devices
+
+Remove Monitoring
+
+Remove DNS
+
+Remove Circuits
+
+Archive IP Space
+
+Remove Nautobot Objects
+
+Generate Closure Report
+
+Plans must be explainable.
+
+---
+
+# Workflow Matching Engine
+
+Purpose:
+
+Determine automation coverage.
+
+Decision Tree
+
+Intent
+
+↓
+
+Single Workflow Exists?
+
+↓
+
+Yes
+
+↓
+
+Recommend Workflow
+
+↓
+
+No
+
+↓
+
+Composable Workflows Exist?
+
+↓
+
+Yes
+
+↓
+
+Generate Composite Plan
+
+↓
+
+No
+
+↓
+
+Generate Procedure
+
+---
+
+# Procedure Generation Engine
+
+Purpose:
+
+Remain useful even without automation.
+
+The AI should generate:
+
+Preparation Steps
+
+Implementation Steps
+
+Validation Steps
+
+Rollback Steps
+
+Risk Assessment
+
+Dependencies
+
+This capability is required.
+
+---
+
+# Configuration Recommendation Engine
+
+Purpose:
+
+Generate implementation examples.
+
+Examples:
+
+Switch Configurations
+
+Firewall Rules
+
+BGP Changes
+
+VLAN Changes
+
+Routing Policies
+
+All generated configurations must be labeled:
+
+PROPOSED CONFIGURATION
+
+Human Review Required
+
+Generated configurations must never be automatically deployed.
+
+---
+
+# Change Request Engine
+
+Purpose:
+
+Generate change requests.
+
+Output:
+
+Business Justification
+
+Scope
+
+Affected Assets
+
+Implementation Plan
+
+Validation Plan
+
+Rollback Plan
+
+Risk Assessment
+
+Future:
+
+ServiceNow Integration
+
+Automatic Change Submission
+
+---
+
+# Validation Engine
+
+Purpose:
+
+Define success criteria.
+
+Examples:
+
+BGP Established
+
+Routes Present
+
+Device Reachable
+
+Application Reachable
+
+Monitoring Healthy
+
+Validation should be generated automatically.
+
+---
+
+# Workflow Launcher Integration
+
+Workflow Launcher is an execution provider.
+
+Integration Model:
+
+Change Copilot
+
+↓
+
+Workflow Launcher API
+
+↓
+
+Workflow Execution
+
+Required Capabilities:
+
+Workflow Search
+
+Workflow Metadata
+
+Workflow Inputs
+
+Workflow Execution
+
+Workflow Status
+
+Workflow History
+
+Change Copilot must not directly execute AWX jobs.
+
+---
+
+# AI Provider Architecture
+
+Create provider abstraction.
+
+Interface:
+
+AIProvider
+
+Supported:
+
+OpenAI
+
+Anthropic
+
+Azure OpenAI
+
+Future:
+
+Ollama
+
+vLLM
+
+Local Models
+
+Business logic must remain provider-independent.
+
+---
+
+# Retrieval-Augmented Generation
+
+Required.
+
+Data Sources:
+
+Nautobot
+
+Workflow Launcher
+
+Internal Documentation
+
+Runbooks
+
+Execution History
+
+Change Records
+
+Preferred Storage:
+
+PostgreSQL pgvector
+
+Future:
+
+Graph RAG
+
+Knowledge Graph Retrieval
+
+---
+
+# Conversation Memory
+
+Store server-side.
+
+Track:
+
+Intent
+
+Parameters
+
+Previous Decisions
+
+Approvals
+
+Conversation Context
+
+Do not rely solely on model memory.
+
+---
+
+# Explainability Requirements
+
+Every recommendation must include:
+
+Why
+
+Confidence
+
+Risk
+
+Dependencies
+
+Expected Outcome
+
+Affected Assets
+
+Automation Coverage
+
+The AI must explain itself.
+
+---
+
+# Safety Requirements
+
+Forbidden:
+
+Direct Device Changes
+
+Credential Access
+
+Arbitrary Shell Execution
+
+Arbitrary Python Execution
+
+Workflow Bypass
+
+Unauthorized Changes
+
+The AI plans.
+
+Humans approve.
+
+Systems execute.
+
+---
+
+# Future Integrations
+
+Phase 1
+
+Nautobot
+
+Workflow Launcher
+
+Phase 2
+
+ServiceNow
+
+Infoblox
+
+Azure
+
+AWS
+
+Phase 3
+
+Meraki
+
+Catalyst Center
+
+SolarWinds
+
+ThousandEyes
+
+GitHub
+
+GitLab
+
+Monitoring Systems
+
+---
+
+# Long-Term Vision
+
+Change Copilot becomes the primary operational interface for network engineering.
+
+Future User Experience
+
+User:
+
+"I want to retire the Amsterdam office."
+
+Platform:
+
+Discovers infrastructure
+
+Calculates impact
+
+Identifies dependencies
+
+Builds implementation plan
+
+Finds automation
+
+Generates missing procedures
+
+Creates change request
+
+Executes approved automation
+
+Validates results
+
+Generates closure report
+
+The engineer describes intent.
+
+The platform engineers the change.
+
+---
+
+# Success Criteria
+
+The platform succeeds when engineers can:
+
+Understand change impact before execution.
+
+Discover available automation automatically.
+
+Generate implementation plans rapidly.
+
+Reduce failed changes.
+
+Generate high-quality change requests.
+
+Increase automation adoption.
+
+Reduce manual analysis effort.
+
+Safely execute infrastructure changes.
+
+Provide a unified AI-driven operational experience for network engineering.
