@@ -1,0 +1,84 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this is
+
+Credential Lifecycle Manager (CLM) is a **Nautobot app** (Django plugin) for managing, tracking, auditing, verifying, and reporting on **local credential rotations** across network devices. It is the authoritative source of truth for rotation campaigns, password versions, device credential compliance, rotation history, verification status, and drift detection. It is **not** a PAM solution and stores **no plaintext** — `PasswordVersion` points at a Nautobot `extras.Secret` (Vault-backed) that resolves the value at access time.
+
+The current code in [credential_lifecycle_manager/](credential_lifecycle_manager/) is an **MVP skeleton**: it implements the *shape* of the design (models, driver seam, Celery harness, service layer). Vendor driver internals, migrations, serializers/API, and UI/views are the next build steps (see [README.md](credential_lifecycle_manager/README.md) "Deferred / next steps").
+
+The product and data-model documents are intentionally slightly ahead of the code.
+In particular, the approved architecture now includes **frozen campaign scope**,
+**campaign targets**, **precheck persistence**, **approval records**, and
+**exception tracking**. Those are target structures that should guide new work,
+even though they are not fully implemented in `models.py` yet.
+
+### Source documents (read these for intent, not just code)
+These are reference material, not shipped code. They live in [artifacts/](artifacts/) (moved out of the deploy root) — the deployable unit is the [credential_lifecycle_manager/](credential_lifecycle_manager/) package alone.
+- [artifacts/clm](artifacts/clm) — the full PRD (product requirements). The "why" behind every model.
+- [artifacts/CLM_DATA_MODEL.md](artifacts/CLM_DATA_MODEL.md) — the data-model spec the models implement.
+- [artifacts/password_change_v2.py](artifacts/password_change_v2.py) — the **legacy** 6,200-line monolithic rotation Job that CLM replaces. Driver adapters wrap its `change_<platform>_password` methods (see `LegacyEngineAdapter` in [drivers/cisco.py](credential_lifecycle_manager/drivers/cisco.py)). The only runtime reference to it is a guarded `try/except` import in `drivers/cisco.py` that degrades gracefully when it is absent, so it is safe to keep out of the deployed package. Treat it as reference, not a file to extend.
+
+## Commands
+
+There is **no build system, dependency manifest, or pytest config yet** (no `pyproject.toml`/`setup.py`/`pytest.ini`). The app assumes it is installed into a Nautobot environment. Use `python3` (there is no `python` on PATH here).
+
+Run the driver-seam tests (designed to run **without** Nautobot/Django — pure-Python contract tests):
+```bash
+# As a standalone script (prints PASS/FAIL per test, exits non-zero on failure):
+python3 -m credential_lifecycle_manager.drivers.tests.test_cisco_seam
+
+# Or under pytest if available:
+pytest credential_lifecycle_manager/drivers/tests/test_cisco_seam.py
+pytest credential_lifecycle_manager/drivers/tests/test_cisco_seam.py::test_partial_when_one_account_fails  # single test
+```
+
+Model/service/task code that imports Nautobot must run inside a configured Nautobot install (`nautobot-server test credential_lifecycle_manager`). The skeleton is deliberately structured so the driver/service logic stays testable in isolation — see "Import discipline" below.
+
+## Architecture
+
+The design fights one specific failure mode of the legacy job: **vague device-level "Success" that masks reality** (multi-account devices, controller fan-out, AAA-fronted devices that can't actually be verified). Every architectural choice exists to make the system *honest* about what it knows.
+
+### The five layers and how they connect
+
+1. **[choices.py](credential_lifecycle_manager/choices.py)** — one shared vocabulary for models, drivers, tasks, and UI. Every set extends Nautobot's `ChoiceSet` (with a fallback shim so it imports without Nautobot). Key invariants live here: `CampaignStatusChoices.OPEN_STATES`/`CLOSED_STATES` (the serial lock), `ExecutionStatusChoices.TERMINAL_STATES` (the drain), and `ConfidenceLevelChoices.RANK` (the confidence ceiling).
+
+2. **[models.py](credential_lifecycle_manager/models.py)** — declarative data model. Every model extends `PrimaryModel` and uses `@extras_features(...)` for native Nautobot integration (custom fields, GraphQL, webhooks, export templates). Models are kept thin: `clean()` holds backstop validation, but load-bearing transactional/locking/derivation logic lives in `services.py`.
+
+3. **[drivers/](credential_lifecycle_manager/drivers/)** — the vendor seam. `base.py` defines `CredentialDriver`/`ControllerDriver` Protocols, the `RotationResult`/`AccountResult`/`ChildResult` dataclasses, and a `register()`/`get_driver()` registry keyed by platform name. **Adding a vendor = adding a driver module that calls `register()`; orchestration never changes.** `cisco.py` is the reference driver and has a second internal seam: `CiscoEngine` (with `LegacyEngineAdapter` now, `NativeCiscoEngine` later) so vendor internals can be refactored behind a stable contract.
+
+4. **[tasks.py](credential_lifecycle_manager/tasks.py)** — Celery execution. `launch_campaign()` fans out **one `rotate_device` task per device** via a `chord` on the dedicated `clm_rotation` queue, with `finalize_campaign` as the callback. Tasks are registered lazily in `apps.py`'s `ready()` (so the `@nautobot_task` decorator runs against Nautobot's configured Celery app) and stashed in `_CLM_TASKS`. `rotate_device` is **idempotent** (already-on-version → Skipped), **retryable** (`autoretry_for` + backoff), and `acks_late` (survives worker death). It writes its own status row transactionally — CLM is the SoT, not scraped JobResult logs.
+
+5. **[services.py](credential_lifecycle_manager/services.py)** — the load-bearing logic the models and tasks delegate to. Locks, the apply-result transaction, state derivation, drain/finalize, and the hash-chained audit all live here.
+
+### Non-obvious invariants (the things that require reading multiple files)
+
+- **Global serial lock — at most one Open campaign fleet-wide.** Two-layer: `RotationCampaign.clean()` is the backstop; `services.assert_no_open_campaign()` is the race-safe version (`select_for_update`). Finishing *execution* does **not** free the system — an operator must explicitly **End** the campaign, which drains in-flight work then closes it. `OPEN_STATES` (in choices) blocks new campaigns; only `ENDED`/`CANCELLED` free it.
+
+- **Frozen scope is part of the target architecture.** Approved campaign membership should become an immutable audit artifact (`CampaignScope` + `CampaignTarget` in the specs). Do not treat `DeviceRotationStatus` as the long-term reporting denominator once those models land; it is execution history, not scope history.
+
+- **Seal vs. drain.** "Sealed" (`services.campaign_is_sealed`) means *no new work may start* (End/Cancel pressed); a Pending device then becomes Skipped(CampaignEnded). In-flight work already Running is allowed to finish. The drain completes in `finalize_campaign`: once nothing is Pending/Running, `Ending → Ended` and the lock frees.
+
+- **Evidence, not flags.** `CredentialObservation` is append-only and is the keystone. `DeviceAccountState.credential_status`/`confidence_level` are **derived** from the latest observation via `services.derive_state_from_observation()`, never hand-set. A fresh rotation seeds `ROTATION_CONFIRMED`; the verification sweep later upgrades/downgrades it.
+
+- **Governance is part of the design, even where code is pending.** Prechecks, approval records, and exception lifecycles are not optional reporting sugar; they are part of the control plane the docs now define. When adding new code, prefer structures that leave room for `PrecheckResult`, `ApprovalRecord`, and `ExceptionRecord` rather than baking assumptions into execution-only tables.
+
+- **The Critical Compliance Rule, enforced in data.** A device fronted by AAA (TACACS/RADIUS) can never reach `VERIFIED` by self-certification. `DeviceVerificationPolicy.max_confidence` caps what a method can produce, and `derive_state_from_observation` clamps confidence to that ceiling using `ConfidenceLevelChoices.RANK`. Cisco's `verify()` returns `None` on purpose (no reliable local-auth verification), forcing fallback to config-hash or rotation-confirmed.
+
+- **No vague Success.** A "password" is really 2-3 named accounts (admin/root/enable), modeled as `LocalAccount`. `RotationResult.rollup_from_accounts()` turns "admin OK, enable failed" into **Partial**, not Success. Controllers (Lighthouse/Panorama/vCenter) fan out via `ControllerExpansion` (one row per managed node); any failed child push makes the controller Partial, and failed/orphan pushes open a `RemediationTask` — dangerous states become *work with an owner*, not just a dashboard number.
+
+- **`apply_rotation_result` ordering is deliberate** (in `services.py`): the secrets-group swap happens **after** confirmed success, so a failed device keeps pointing at its old working credential; if the swap itself fails the device is Partial (rotated-but-SoT-not-updated), never a silent Success. The whole thing runs in one `transaction.atomic()` — all-or-nothing.
+
+- **Hash-chained audit.** `CredentialAuditLog` is append-only and tamper-evident (`prev_hash`/`row_hash` via `services.write_audit`), independent of Nautobot's prunable JobResult/ObjectChange. Production DB grants should forbid UPDATE/DELETE on it.
+
+### Import discipline (important when editing tasks/services/drivers)
+
+`tasks.py`, `services.py`, and the driver modules import `nautobot.*` and Django models **inside functions**, not at module top level. This is intentional: it keeps the modules importable without a configured Django/Celery so the driver-seam tests run in isolation. Preserve this pattern — do not hoist Nautobot/Django imports to module scope in these files.
+
+## Configuration
+
+App settings (`apps.py` `default_settings`) — everything environment-specific lives in a Nautobot External Integration / config, never hardcoded:
+- `vault_external_integration_name` (default `"Vault"`)
+- `rotation_queue` (default `"clm_rotation"`) — the dedicated Celery queue; concurrency on it is the tunable safety throttle.
+- `golden_config_enabled` (default `False`) — Golden Config is an **optional** dependency used for config-hash drift; gate any GC use behind this flag.
