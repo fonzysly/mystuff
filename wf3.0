@@ -1,0 +1,12 @@
+REST API for workflow discovery, launching, progress, and cancellation
+Live per-action workflow progress
+Structured script results and downloadable artifacts
+Partial-success run status
+Accurate execution-duration tracking
+Per-workflow user guides
+Pre-execution confirmation page
+Built-in problem reporting with email notifications
+Improved output-focused run details
+Improved scheduled-run cancellation
+Change number displayed in Run History
+Workflow/run selection when reporting problems
