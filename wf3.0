@@ -10,3 +10,33 @@ Improved output-focused run details
 Improved scheduled-run cancellation
 Change number displayed in Run History
 Workflow/run selection when reporting problems
+
+
+
+Here's a handover note you can send to the plugin team:
+
+Bug: 3.0.1 context injection breaks scripts using positional api_func params
+
+Summary: The new WorkflowContext reporter injection in executors.py (_script_accepts_context) injects into any run() with ≥2 positional parameters. This collides with a widespread convention across workflow scripts that use a second positional param for dependency injection in tests (e.g. api_func=None).
+
+Root cause: _script_accepts_context at line 1059 of executors.py returns True when len(positional) >= 2. It doesn't distinguish between a param intended for the WorkflowContext and one used for other purposes.
+
+Error: 'WorkflowContext' object is not callable — the WorkflowContext is passed as api_func, then the script calls api_func(...) and blows up.
+
+Impact: 17 out of 46 scripts are affected. Any workflow using these scripts will fail with status partial when the affected action runs. Confirmed broken in prod on "Reprocess Access Request" (reprocess_access.py). Same issue exists on dev.
+
+Affected scripts (all have ≥2 positional params in run()):
+reprocess_access.py, create_s2s_vpn.py, create_s2s_vpn_form.py, create_security_zone.py, create_subnet.py, get_firewalls.py, get_s2s_vpn.py, modify_s2s_vpn.py, modify_subnet.py, onboard_firewall_path.py, sync_arista_snapshot.py, sync_security_zone.py, campus_subnet_onboard.py, deploy_uptime_kuma.py, record_juniper_ipsec.py, advent_vpn_build.py, modify_advent_ipsec_tunnel.py
+
+Recommended fix (plugin-side, one line): Change the heuristic in _script_accepts_context to match by parameter name, not count. Only inject when the second positional param is named ctx or context:
+
+
+def _script_accepts_context(func):
+    try:
+        signature = inspect.signature(func)
+    except (TypeError, ValueError):
+        return False
+    parameters = list(signature.parameters.values())
+    positional = [p for p in parameters if p.kind in (p.POSITIONAL_ONLY, p.POSITIONAL_OR_KEYWORD)]
+    return len(positional) >= 2 and positional[1].name in ("ctx", "context")
+This is backward-compatible: existing scripts keep working untouched, and new scripts opt into context injection by naming the param ctx.
